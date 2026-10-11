@@ -107,6 +107,7 @@ window.Chapter1 = (function () {
     { monster: 'monster-boss', color: '#7B61FF', gen: genBoss, boss: true },
   ];
   const BOSS_INDEX = LESSONS.length - 1;
+  const MOM_KEYS = ['lastCol', 'swap', 'split', 'zeroOne', 'ten', 'unknown'];
 
   // ---------- Text ----------
 
@@ -252,6 +253,13 @@ window.Chapter1 = (function () {
 
   function bossUnlocked(progress) {
     return LESSONS.slice(0, BOSS_INDEX).every((_, i) => (progress[i] || 0) > 0);
+  }
+
+  function wireMom(btn, lesson) {
+    btn.addEventListener('click', () => {
+      Sounds.tap();
+      Mom.open(MOM_KEYS[lesson], ctx.lang(), N);
+    });
   }
 
   function animate(el, cls) {
@@ -425,10 +433,12 @@ window.Chapter1 = (function () {
         <h2 class="ch1-title">📖 ${text.name}</h2>
         ${heroTalk('ready', text.rule)}
         <div class="card rule-card pop-in">${body}</div>
+        ${L.boss ? '' : `<div class="ask-mom-row">${Mom.button(ctx.lang(), 'askMom')}</div>`}
         <div class="vs-preview"><img src="${img(L.monster)}" alt=""><p>${s.waiting(text.monster)}</p></div>
         <div class="center"><button class="big-btn" type="button" id="fightBtn">${s.fight}</button></div>
       </section>`;
 
+    if (!L.boss) wireMom($('askMom'), st.lesson);
     $('fightBtn').addEventListener('click', () => {
       Sounds.tap();
       startBattle();
@@ -473,13 +483,18 @@ window.Chapter1 = (function () {
         <div class="choices">
           ${q.choices.map((v, i) => `<button class="choice pop-in" type="button" style="--d:${i * 60}ms" data-v="${v}">${N(v)}</button>`).join('')}
         </div>
-        <div class="feedback" id="fb"></div>
+        <div class="ask-mom-row">${Mom.button(ctx.lang(), 'askMom')}</div>
       </section>`;
     st.fresh = false;
 
     ctx.root.querySelectorAll('.choice').forEach((btn) =>
       btn.addEventListener('click', () => answer(btn, Number(btn.dataset.v)))
     );
+    $('askMom').addEventListener('click', () => {
+      if (st.locked) return;
+      Sounds.tap();
+      Mom.open(MOM_KEYS[q.lesson], ctx.lang(), N);
+    });
   }
 
   function answer(btn, value) {
@@ -557,25 +572,25 @@ window.Chapter1 = (function () {
       }, 350);
 
       const rule = s.lessons[q.lesson].rule;
-      later(
-        () =>
-          UI.sheet(
-            `<div class="oops">${s.answerIs} <b>${N(q.answer)}</b></div>
-             <div class="hint-box" style="--c:${LESSONS[st.lesson].color}"><p class="hint-rule">💡 ${rule}</p>${visualHtml(q.visual)}</div>`,
-            st.heroHp <= 0 ? s.finish : s.nextQ,
-            () => {
-              if (st.heroHp <= 0) {
-                finish(false);
-                return;
-              }
-              st.q = newQuestion();
-              st.locked = false;
-              st.talk = pick(s.startTalk);
-              renderBattle();
+      later(() => {
+        UI.sheet(
+          `<div class="oops">${s.answerIs} <b>${N(q.answer)}</b></div>
+           <div class="hint-box" style="--c:${LESSONS[st.lesson].color}"><p class="hint-rule">💡 ${rule}</p>${visualHtml(q.visual)}</div>
+           <div class="ask-mom-row">${Mom.button(ctx.lang())}</div>`,
+          st.heroHp <= 0 ? s.finish : s.nextQ,
+          () => {
+            if (st.heroHp <= 0) {
+              finish(false);
+              return;
             }
-          ),
-        900
-      );
+            st.q = newQuestion();
+            st.locked = false;
+            st.talk = pick(s.startTalk);
+            renderBattle();
+          }
+        );
+        wireMom(document.querySelector('.sheet .ask-mom'), q.lesson);
+      }, 900);
     }
   }
 
@@ -668,6 +683,7 @@ window.Chapter1 = (function () {
     leave() {
       clearTimers();
       UI.closeSheet();
+      Mom.close();
     },
     render,
   };

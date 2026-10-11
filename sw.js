@@ -1,7 +1,11 @@
 // Bump the version whenever app files change so phones download the update.
-const CACHE = 'times-tables-v4';
+const CACHE = 'times-tables-v5';
 
-const VOICES = ['tables', 'chapter1', 'chapter2', 'ch3', 'ch4', 'ch5', 'ch6', 'ch7', 'ch8', 'ch9', 'ch10'];
+const MOM_STEPS = { lastCol: 5, swap: 5, split: 5, zeroOne: 5, ten: 4, unknown: 4 };
+const VOICES = [
+  'tables', 'chapter1', 'chapter2', 'ch3', 'ch4', 'ch5', 'ch6', 'ch7', 'ch8', 'ch9', 'ch10',
+  ...Object.entries(MOM_STEPS).flatMap(([lesson, n]) => Array.from({ length: n }, (_, i) => `mom-${lesson}-${i}`)),
+];
 
 const APP_FILES = [
   './',
@@ -11,12 +15,14 @@ const APP_FILES = [
   'css/chapter1.css',
   'css/chapter2.css',
   'css/engine.css',
+  'css/mom.css',
   'js/profile.js',
   'js/sounds.js',
   'js/confetti.js',
   'js/intros.js',
   'js/voice.js',
   'js/ui.js',
+  'js/mom.js',
   'js/chapter1.js',
   'js/chapter2.js',
   'js/engine.js',
@@ -43,6 +49,7 @@ const APP_FILES = [
   'img/girl/hero-attack.png',
   'img/girl/hero-hurt.png',
   'img/girl/hero-victory.png',
+  'img/mom/mom-explain.jpg',
   'img/avatar-hello.jpg',
   'img/avatar-think.jpg',
   'img/avatar-cheer.jpg',
