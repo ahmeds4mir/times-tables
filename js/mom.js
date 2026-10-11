@@ -38,6 +38,69 @@ window.Mom = (function () {
     return el;
   }
 
+  // Fades out what is on the stage, then shows the new pieces.
+  function swapStage(S, ...els) {
+    [...S.stage.children].forEach((c) => c.classList.add('mom-leaving'));
+    S.later(() => {
+      S.stage.innerHTML = '';
+      S.stage.append(...els);
+    }, 350);
+  }
+
+  // One row of the times table drawn as a staircase, with the child's hero standing on a step.
+  function staircase(S, table, steps) {
+    const el = make('<div class="stairs"></div>');
+    el.bars = [];
+    for (let k = 1; k <= steps; k++) {
+      const col = make(`<div class="stair-col"><div class="stair" style="--h:${k / steps}"><b>${S.N(table * k)}</b></div>
+        <small>${S.N(table)} × ${S.N(k)}</small></div>`);
+      col.firstChild.style.setProperty('--d', `${(k - 1) * 200}ms`);
+      el.append(col);
+      el.bars.push(col.querySelector('.stair'));
+    }
+    const hero = window.Profile ? Profile.heroImg('ready') : IMG;
+    el.walker = make(`<img class="stair-walker" src="${hero}" alt="">`);
+    el.append(el.walker);
+    el.moveTo = (k) => {
+      const bar = el.bars[k - 1];
+      el.walker.style.left = `${bar.offsetLeft + bar.offsetWidth / 2}px`;
+      el.walker.style.top = `${bar.offsetTop - el.walker.offsetHeight}px`;
+      el.walker.classList.add('on');
+      el.bars.forEach((b, i) => b.classList.toggle('here', i === k - 1));
+    };
+    return el;
+  }
+
+  // A 0..max number line with a frog that makes equal jumps.
+  function numberLine(S, max, step) {
+    const W = 300;
+    const unit = (W - 30) / max;
+    const x = (n) => 15 + n * unit;
+    let svg = `<svg viewBox="0 0 ${W} 100"><line x1="${x(0)}" y1="78" x2="${x(max)}" y2="78"/>`;
+    for (let n = 0; n <= max; n++) {
+      const big = n % step === 0;
+      svg += `<line class="tick" x1="${x(n)}" y1="${big ? 70 : 73}" x2="${x(n)}" y2="${big ? 86 : 83}"/>`;
+      if (big) svg += `<text x="${x(n)}" y="99" text-anchor="middle">${S.N(n)}</text>`;
+    }
+    svg += '<g class="arcs"></g></svg>';
+    const el = make(`<div class="numline">${svg}<span class="frog">🐸</span></div>`);
+    const frog = el.querySelector('.frog');
+    const at = (n, lift = 0) => {
+      const s = el.clientWidth / W;
+      return `translate(${x(n) * s - frog.offsetWidth / 2}px, ${(64 - lift) * s - frog.offsetHeight}px)`;
+    };
+    el.place = (n) => (frog.style.transform = at(n));
+    el.jump = (from, to, label) => {
+      const mid = (x(from) + x(to)) / 2;
+      el.querySelector('.arcs').insertAdjacentHTML('beforeend',
+        `<path d="M ${x(from)} 72 Q ${mid} 22 ${x(to)} 72"/><g class="jump-num"><circle cx="${mid}" cy="38" r="9"/>
+         <text x="${mid}" y="42" text-anchor="middle">${label}</text></g>`);
+      frog.animate([{ transform: at(from) }, { transform: at((from + to) / 2, 40) }, { transform: at(to) }],
+        { duration: 600, easing: 'ease-in-out', fill: 'forwards' });
+    };
+    return el;
+  }
+
   // Equation tokens: number | 'op' | '?' | {box} | {v, c: 'a' | 'b' | 'r', lbl: {ar, en}}
   const A = (v, lbl) => ({ v, c: 'a', lbl });
   const B = (v, lbl) => ({ v, c: 'b', lbl });
@@ -48,97 +111,96 @@ window.Mom = (function () {
   // ---------- Lessons ----------
 
   const LESSONS = {
-    // Lesson 1: when the 2nd number grows by 1, the answer grows by the 1st number.
+    // Lesson 1: when the 2nd number goes up (or down) by 1, the answer changes by the 1st number.
     lastCol: {
       setup(S) {
         S.count = counter(S);
         S.shelf = make('<div class="cake-shelf"></div>');
-        S.legend = make('<div class="mom-legend"></div>');
         S.boxes = [0, 1, 2].map(() => {
           const b = make('<div class="cake-box"><span class="box-tally"></span></div>');
           for (let i = 0; i < 4; i++) b.append(make('<span class="cake">🧁</span>'));
           S.shelf.append(b);
           return b;
         });
-        S.addOne = (gap) =>
-          S.boxes.forEach((b, i) => S.later(() => b.append(make('<span class="cake extra">🧁</span>')), i * gap));
-        S.stage.append(S.count, S.shelf, S.legend);
+        S.stage.append(S.count, S.shelf);
       },
       steps: [
         {
-          ar: 'عندنا ٣ علب، في كل علبة ٤ كب كيك.',
-          en: 'We have 3 boxes, with 4 cupcakes in each box.',
-          ms: 1500,
-          run: (S) => {
-            S.boxes.forEach((b, i) => S.later(() => b.classList.add('on'), i * 400));
-            S.eq([[A(3), '×', B(4)]]);
-          },
-        },
-        {
-          ar: 'نعدّ بالأربعات: ٤، ٨، ١٢.',
-          en: 'Count in fours: 4, 8, 12.',
-          ms: 2600,
+          ar: 'عندنا ٣ علب، في كل علبة ٤ كب كيك: ٤، ٨، ١٢.',
+          en: 'We have 3 boxes, with 4 cupcakes in each box: 4, 8, 12.',
+          ms: 2800,
           run: (S) => {
             S.boxes.forEach((b, i) =>
               S.later(() => {
+                b.classList.add('on');
                 b.querySelector('.box-tally').textContent = S.N(4 * (i + 1));
                 b.querySelector('.box-tally').classList.add('on');
-                restartAnim(b, 'ping');
                 S.count.set(4 * (i + 1));
-              }, i * 800)
+              }, 300 + i * 800)
             );
             S.eq([[A(3), '×', B(4), '=', G(12)]]);
           },
         },
         {
-          ar: 'نحط كب كيك زيادة في كل علبة.',
-          en: 'Now put one more cupcake in each box.',
+          ar: 'نحط واحدة زيادة في كل علبة. زاد ٣ بس، لأن عندنا ٣ علب!',
+          en: 'Put one more in each box. It only grew by 3, because we have 3 boxes!',
           ms: 2200,
           run: (S) => {
-            S.boxes.forEach((b) => b.querySelector('.box-tally').classList.remove('on'));
-            S.addOne(500);
+            S.boxes.forEach((b, i) => {
+              b.querySelector('.box-tally').classList.remove('on');
+              S.later(() => b.append(make('<span class="cake extra">🧁</span>')), i * 500);
+            });
             S.later(() => S.count.set(15, `+${S.N(3)}`), 1700);
             S.eq([[A(3), '×', B(5), '=', 12, '+', A(3), '=', G(15)]]);
           },
         },
         {
-          ar: 'زاد ٣ بس، لأن عندنا ٣ علب: واحدة زيادة لكل علبة!',
-          en: 'It only grew by 3, because we have 3 boxes: one more for each box!',
+          ar: 'ده سلّم جدول ٣. كل درجة أعلى من اللي قبلها بـ ٣.',
+          en: 'This is the 3 times table as a staircase. Each step is 3 higher than the one before.',
+          ms: 2400,
+          run: (S) => {
+            S.stairs = staircase(S, 3, 6);
+            swapStage(S, S.stairs);
+            S.later(() => S.stairs.classList.add('on'), 400);
+            S.later(() => S.stairs.moveTo(4), 1900);
+            S.eq([[A(3), '×', B(4), '=', G(12)]]);
+          },
+        },
+        {
+          ar: 'نطلع درجة: ١٢ + ٣ = ١٥.',
+          en: 'Go up one step: 12 + 3 = 15.',
+          ms: 1200,
+          run: (S) => {
+            S.stairs.moveTo(5);
+            S.eq([[A(3), '×', B(5), '=', A(3), '×', B(4), '+', A(3), '=', G(15)]]);
+          },
+        },
+        {
+          ar: 'وكل درجة لتحت بتقل ٣: ١٥، ١٢، ٩.',
+          en: 'Each step down takes 3 away: 15, 12, 9.',
           ms: 1800,
           run: (S) => {
-            S.shelf.querySelectorAll('.extra').forEach((c, i) => S.later(() => restartAnim(c, 'ping'), i * 400));
-            S.eq([[A(3), '×', B(5), '=', A(3), '×', B(4), '+', A(3)]]);
+            S.stairs.moveTo(4);
+            S.later(() => S.stairs.moveTo(3), 800);
+            S.eq([[A(3), '×', B(3), '=', A(3), '×', B(4), '−', A(3), '=', G(9)]]);
           },
         },
         {
-          ar: 'ولو أكلنا واحدة من كل علبة، الناتج يقل ٣.',
-          en: 'And if we eat one from each box, the answer goes down by 3.',
-          ms: 2000,
+          ar: 'القاعدة: لو المضروب فيه زاد ١، الناتج يزيد بمقدار المضروب. ولو قل ١، الناتج يقل بمقدار المضروب.',
+          en: 'The rule: when the 2nd number goes up by 1, the answer grows by the 1st number. When it goes down by 1, the answer shrinks by the 1st number.',
+          ms: 800,
           run: (S) => {
-            S.shelf.querySelectorAll('.extra').forEach((c, i) => S.later(() => c.classList.add('eaten'), i * 300));
-            S.later(() => {
-              S.shelf.querySelectorAll('.extra').forEach((c) => c.remove());
-              S.count.set(12, `−${S.N(3)}`);
-            }, 1500);
-            S.eq([[A(3), '×', B(4), '=', 15, '−', A(3), '=', G(12)]]);
-          },
-        },
-        {
-          ar: 'القاعدة: لو المضروب فيه زاد ١، الناتج يزيد بمقدار المضروب.',
-          en: 'The rule: when the 2nd number grows by 1, the answer grows by the 1st number.',
-          ms: 1600,
-          run: (S) => {
-            S.addOne(250);
-            S.later(() => S.count.set(15, `+${S.N(3)}`), 800);
-            S.legend.innerHTML = `<span class="a">${S.t({ ar: 'المضروب = عدد العلب', en: '1st number = boxes' })}</span>
-              <span class="b">${S.t({ ar: 'المضروب فيه = في كل علبة', en: '2nd number = in each box' })}</span>`;
-            S.eq([[A(3, MULTIPLICAND), '×', B(5, MULTIPLIER), '=', A(3), '×', B(4), '+', A(3)]]);
+            S.stairs.moveTo(5);
+            S.eq([
+              [A(3, MULTIPLICAND), '×', B(5, MULTIPLIER), '=', A(3), '×', B(4), '+', A(3)],
+              [A(3), '×', B(3), '=', A(3), '×', B(4), '−', A(3)],
+            ]);
           },
         },
       ],
     },
 
-    // Lesson 1: swapping the numbers does not change the answer.
+    // Lesson 1: swapping the numbers does not change the answer. The child picks how to count first.
     swap: {
       setup(S) {
         S.count = counter(S);
@@ -153,55 +215,60 @@ window.Mom = (function () {
           }
         }
         S.mark = (cls, test) => S.cells.forEach(({ cell, r, c }) => cell.classList.toggle(cls, test(r, c)));
-        S.stage.append(S.count, S.tray);
+        S.countBy = (way) => {
+          const rows = way === 'row';
+          const n = rows ? 3 : 5;
+          S.mark('row', () => false);
+          S.mark('col', () => false);
+          for (let k = 0; k < n; k++) {
+            S.later(() => {
+              S.mark(way, (r, c) => (rows ? r : c) <= k);
+              S.mark('now', (r, c) => (rows ? r : c) === k);
+              S.count.set((rows ? 5 : 3) * (k + 1));
+            }, k * 750);
+          }
+          S.later(() => S.mark('now', () => false), n * 750);
+          S.eq([rows ? [A(3), '×', B(5), '=', G(15)] : [B(5), '×', A(3), '=', G(15)]]);
+          return n * 750;
+        };
+        S.choices = make(`<div class="mom-choices">
+          <button type="button" class="mom-choice row" data-way="row">${S.t({ ar: 'بالصفوف ↔', en: 'By rows ↔' })}</button>
+          <button type="button" class="mom-choice col" data-way="col">${S.t({ ar: 'بالعواميد ↕', en: 'By columns ↕' })}</button></div>`);
+        S.choices.querySelectorAll('button').forEach((btn) =>
+          btn.addEventListener('click', () => {
+            if (S.first) return;
+            Sounds.tap();
+            S.first = btn.dataset.way;
+            S.choices.classList.add('mom-leaving');
+            S.later(() => S.unlock(), S.countBy(S.first) + 300);
+          })
+        );
+        S.stage.append(S.count, S.tray, S.choices);
       },
       steps: [
         {
-          ar: 'صينية فيها ٣ صفوف، في كل صف ٥ كب كيك.',
-          en: 'A tray with 3 rows, and 5 cupcakes in each row.',
-          ms: 1400,
+          ar: 'صينية فيها ٣ صفوف، في كل صف ٥ كب كيك. نعدّها بالصفوف ولا بالعواميد؟',
+          en: 'A tray with 3 rows, and 5 cupcakes in each row. Shall we count by rows or by columns?',
+          gate: true,
           run: (S) => {
             S.tray.classList.add('on');
+            S.later(() => S.choices.classList.add('on'), 1100);
             S.eq([[A(3), '×', B(5)]]);
           },
         },
         {
-          ar: 'نعدّ بالصفوف: ٥، ١٠، ١٥.',
-          en: 'Count by rows: 5, 10, 15.',
-          ms: 2600,
-          run: (S) => {
-            [0, 1, 2].forEach((row) =>
-              S.later(() => {
-                S.mark('row', (r) => r <= row);
-                S.mark('now', (r) => r === row);
-                S.count.set(5 * (row + 1));
-              }, row * 800)
-            );
-            S.eq([[A(3), '×', B(5), '=', G(15)]]);
-          },
-        },
-        {
-          ar: 'ونعدّها بالعواميد: ٥ عواميد، في كل عمود ٣: ٣، ٦، ٩، ١٢، ١٥.',
-          en: 'Now count by columns: 5 columns of 3: 3, 6, 9, 12, 15.',
+          ar: 'ودلوقتي نعدّها بالطريقة التانية!',
+          en: "Now let's count it the other way!",
           ms: 3800,
-          run: (S) => {
-            S.mark('row', () => false);
-            [0, 1, 2, 3, 4].forEach((col) =>
-              S.later(() => {
-                S.mark('col', (r, c) => c <= col);
-                S.mark('now', (r, c) => c === col);
-                S.count.set(3 * (col + 1));
-              }, col * 700)
-            );
-            S.eq([[B(5), '×', A(3), '=', G(15)]]);
-          },
+          run: (S) => S.countBy(S.first === 'row' ? 'col' : 'row'),
         },
         {
           ar: 'نفس الصينية ونفس الكب كيك! يعني ٣ × ٥ = ٥ × ٣.',
           en: 'Same tray, same cupcakes! So 3 × 5 = 5 × 3.',
           ms: 1200,
           run: (S) => {
-            S.mark('now', () => false);
+            S.mark('row', () => false);
+            S.mark('col', () => false);
             S.cells.forEach(({ cell }, i) => S.later(() => restartAnim(cell, 'ping'), i * 40));
             S.eq([[A(3), '×', B(5), '=', B(5), '×', A(3), '=', G(15)]]);
           },
@@ -295,124 +362,106 @@ window.Mom = (function () {
       ],
     },
 
-    // Lesson 4: the book's darts game — any number × 0 = 0, × 1 = the same number.
+    // Lesson 4: empty plates after a party, then rock-paper-scissors scoring (lose = 0, draw = 1, win = 5).
     zeroOne: {
-      rings: [
-        { pts: 0, r: 120, c: '#9AA3B5' },
-        { pts: 1, r: 95, c: '#2B8BE2' },
-        { pts: 5, r: 72, c: '#1F9D55' },
-        { pts: 10, r: 48, c: '#E2572B' },
+      rounds: [
+        ['tie', '✌️', '✌️'], ['win', '✊', '✌️'], ['lose', '✌️', '✊'], ['tie', '✊', '✊'],
+        ['lose', '✊', '✋'], ['win', '✋', '✊'], ['tie', '✋', '✋'], ['lose', '✋', '✌️'],
       ],
-      hits: {
-        10: [[-16, -12], [18, 10]],
-        5: [],
-        1: [[-79, -29], [80, -24], [-40, 76], [50, 70]],
-        0: [[93, 54], [-93, 54], [-69, -83]],
-      },
+      points: { win: 5, tie: 1, lose: 0 },
       setup(S) {
-        const L = LESSONS.zeroOne;
-        const C = 125;
-        let svg = '<svg class="dart-board" viewBox="0 0 250 250">';
-        L.rings.forEach((g) => {
-          const y = g.pts === 10 ? C + 7 : C - g.r + 18;
-          svg += `<g class="ring" data-p="${g.pts}"><circle cx="${C}" cy="${C}" r="${g.r}" fill="${g.c}" stroke="#fff" stroke-width="3"/>
-            <text x="${C}" y="${y}" text-anchor="middle">${S.N(g.pts)}</text></g>`;
+        S.party = make('<div class="party"></div>');
+        S.plates = [0, 1, 2].map(() => {
+          const p = make(`<div class="party-plate"><span class="zero">${S.N(0)}</span></div>`);
+          for (let i = 0; i < 4; i++) p.append(make('<span class="drink">🥤</span>'));
+          S.party.append(p);
+          return p;
         });
-        svg += '<g class="darts"></g></svg>';
-        S.board = make(svg);
-        const head = S.t({ ar: ['الحلقة', 'السهام', 'النقاط'], en: ['Ring', 'Darts', 'Points'] });
-        S.table = make(`<table class="dart-score">
-          <tr>${head.map((h) => `<th>${h}</th>`).join('')}</tr>
-          ${[10, 5, 1, 0].map((p) => `<tr data-p="${p}"><td>${S.N(p)}</td><td class="n"></td><td class="s"></td></tr>`).join('')}
-          <tr class="tot"><td colspan="2">${S.t({ ar: 'المجموع', en: 'Total' })}</td><td class="s"></td></tr></table>`);
-        S.stage.classList.add('col');
-        S.stage.append(S.board, S.table);
-        S.focus = (p) => {
-          S.board.classList.toggle('focus', p != null);
-          S.board.querySelectorAll('.ring').forEach((g) => g.classList.toggle('on', Number(g.dataset.p) === p));
-          S.table.querySelectorAll('tr[data-p]').forEach((tr) => tr.classList.toggle('on', Number(tr.dataset.p) === p));
-        };
-        S.cell = (p, col, v) => {
-          const td = S.table.querySelector(p === 'tot' ? '.tot .s' : `tr[data-p="${p}"] .${col}`);
-          td.innerHTML = `<span class="pop">${S.N(v)}</span>`;
-        };
-        S.countRing = (p, gap) => {
-          const ds = [...S.board.querySelectorAll(`.dart[data-p="${p}"]`)];
-          if (!ds.length) S.cell(p, 's', 0);
-          ds.forEach((d, i) => S.later(() => { d.classList.add('counted'); S.cell(p, 's', (i + 1) * p); }, i * gap));
-          return Math.max(1, ds.length) * gap;
-        };
+        S.stage.append(S.party);
+        S.names = S.t({
+          ar: { win: 'فوز', tie: 'تعادل', lose: 'خسارة' },
+          en: { win: 'Win', tie: 'Draw', lose: 'Lose' },
+        });
       },
       steps: [
         {
-          ar: 'لعبة السهام! كل حلقة ليها نقط: ١٠ و ٥ و ١ و ٠.',
-          en: 'A darts game! Each ring has points: 10, 5, 1 and 0.',
-          ms: 2200,
+          ar: 'في الحفلة: ٣ أطباق، في كل طبق ٤ كوبايات عصير.',
+          en: 'At the party: 3 plates, with 4 cups of juice on each plate.',
+          ms: 1600,
           run: (S) => {
-            [10, 5, 1, 0].forEach((p, i) => S.later(() => S.focus(p), i * 500));
-            S.later(() => S.focus(null), 2100);
+            S.plates.forEach((p, i) => S.later(() => p.classList.add('on'), i * 350));
+            S.eq([[A(3), '×', B(4), '=', G(12)]]);
+          },
+        },
+        {
+          ar: 'بعد الحفلة شربنا كله! لسه عندنا ٣ أطباق، بس في كل طبق ٠. يعني ٣ × ٠ = ٠.',
+          en: 'After the party we drank it all! We still have 3 plates, but each has 0. So 3 × 0 = 0.',
+          ms: 2600,
+          run: (S) => {
+            S.plates.forEach((p, i) =>
+              S.later(() => {
+                p.querySelectorAll('.drink').forEach((d) => d.classList.add('gone'));
+                p.classList.add('empty');
+              }, i * 700)
+            );
+            S.eq([[A(3), '×', B(0), '=', 0, '+', 0, '+', 0, '=', G(0)]]);
+          },
+        },
+        {
+          ar: 'يلا نلعب حجرة ورقة مقص مع ماما! الفوز بـ ٥ نقط، التعادل بنقطة، والخسارة بصفر.',
+          en: "Let's play rock-paper-scissors with Mom! A win is 5 points, a draw is 1 point, and a loss is 0.",
+          ms: 4200,
+          run: (S) => {
+            const L = LESSONS.zeroOne;
+            const grid = make('<div class="rps-grid"></div>');
+            const head = S.t({ ar: ['النتيجة', 'المرات', 'النقاط'], en: ['Result', 'Times', 'Points'] });
+            S.table = make(`<table class="points-table">
+              <tr>${head.map((h) => `<th>${h}</th>`).join('')}</tr>
+              ${['win', 'tie', 'lose'].map((k) => `<tr data-k="${k}"><td>${S.names[k]} = ${S.N(L.points[k])}</td><td class="n"></td><td class="s"></td></tr>`).join('')}
+              <tr class="tot"><td colspan="2">${S.t({ ar: 'المجموع', en: 'Total' })}</td><td class="s"></td></tr></table>`);
+            swapStage(S, grid, S.table);
+            L.rounds.forEach(([k, me, mom], i) =>
+              S.later(() => grid.append(make(`<div class="rps-card ${k}"><span>${me}</span><i>${S.t({ ar: 'ضد', en: 'vs' })}</i><span>${mom}</span>
+                <b>${S.names[k]}</b></div>`)), 500 + i * 300)
+            );
+            ['win', 'tie', 'lose'].forEach((k, i) =>
+              S.later(() => S.cell(k, 'n', L.rounds.filter((r) => r[0] === k).length), 3200 + i * 250)
+            );
             S.eq([]);
           },
         },
         {
-          ar: 'سلمى رمت ٩ سهام. نعدّ السهام اللي في كل حلقة.',
-          en: 'Salma threw 9 darts. Count the darts in each ring.',
-          ms: 3600,
+          ar: 'التعادل ٣ مرات، كل مرة بنقطة واحدة: ٣ × ١ = ٣.',
+          en: 'A draw 3 times, 1 point each time: 3 × 1 = 3.',
+          ms: 1200,
           run: (S) => {
-            const all = [];
-            Object.entries(LESSONS.zeroOne.hits).forEach(([p, list]) => list.forEach(([x, y]) => all.push([p, x, y])));
-            const g = S.board.querySelector('.darts');
-            all.forEach(([p, x, y], i) =>
-              S.later(() => g.insertAdjacentHTML('beforeend',
-                `<g class="dart" data-p="${p}"><circle cx="${125 + x}" cy="${125 + y}" r="7"/></g>`), i * 260)
-            );
-            [10, 5, 1, 0].forEach((p, i) =>
-              S.later(() => S.cell(p, 'n', LESSONS.zeroOne.hits[p].length), all.length * 260 + 300 + i * 250)
-            );
+            S.focus('tie');
+            S.cell('tie', 's', 3);
+            S.eq([[A(3), '×', B(1), '=', G(3)]]);
           },
         },
         {
-          ar: 'حلقة الواحد: ٤ سهام، كل سهم بنقطة واحدة. يعني ٤ × ١ = ٤.',
-          en: 'The 1 ring: 4 darts, each worth 1 point. So 4 × 1 = 4.',
-          ms: 2000,
+          ar: 'الخسارة ٣ مرات، كل مرة بصفر: ٣ × ٠ = ٠.',
+          en: 'A loss 3 times, 0 points each time: 3 × 0 = 0.',
+          ms: 1200,
           run: (S) => {
-            S.focus(1);
-            S.countRing(1, 450);
-            S.eq([[A(4), '×', B(1), '=', G(4)]]);
-          },
-        },
-        {
-          ar: 'حلقة الصفر: ٣ سهام، كل سهم بصفر. يعني ٣ × ٠ = ٠.',
-          en: 'The 0 ring: 3 darts, each worth 0. So 3 × 0 = 0.',
-          ms: 2000,
-          run: (S) => {
-            S.focus(0);
-            S.countRing(0, 550);
+            S.focus('lose');
+            S.cell('lose', 's', 0);
             S.eq([[A(3), '×', B(0), '=', G(0)]]);
           },
         },
         {
-          ar: 'حلقة ٥: ولا سهم، يعني ٠ × ٥ = ٠. وحلقة ١٠: سهمين، يعني ٢ × ١٠ = ٢٠.',
-          en: 'The 5 ring: no darts, so 0 × 5 = 0. The 10 ring: 2 darts, so 2 × 10 = 20.',
-          ms: 2400,
+          ar: 'والفوز مرتين: ٢ × ٥ = ١٠. المجموع ١٣ نقطة! أي عدد × ٠ = ٠، وأي عدد × ١ = نفس العدد.',
+          en: 'And 2 wins: 2 × 5 = 10. Total: 13 points! Any number × 0 = 0, and any number × 1 = the same number.',
+          ms: 1200,
           run: (S) => {
-            S.focus(5);
-            S.countRing(5, 400);
+            S.focus('win');
+            S.cell('win', 's', 10);
             S.later(() => {
-              S.focus(10);
-              S.countRing(10, 450);
-            }, 1200);
-            S.eq([[A(0), '×', B(5), '=', G(0)], [A(2), '×', B(10), '=', G(20)]]);
-          },
-        },
-        {
-          ar: 'المجموع ٢٤ نقطة! وافتكر: أي عدد × ٠ = ٠، وأي عدد × ١ = نفس العدد.',
-          en: 'Total: 24 points! Remember: any number × 0 = 0, and any number × 1 = the same number.',
-          ms: 800,
-          run: (S) => {
-            S.focus(null);
-            S.cell('tot', 's', 24);
-            S.eq([[20, '+', 0, '+', 4, '+', 0, '=', G(24)], [A(9), '×', B(0), '=', G(0), '|', A(9), '×', B(1), '=', G(9)]]);
+              S.focus(null);
+              S.cell('tot', 's', 13);
+            }, 900);
+            S.eq([[A(2), '×', B(5), '=', G(10)], [A(9), '×', B(0), '=', G(0), '|', A(9), '×', B(1), '=', G(9)]]);
           },
         },
       ],
@@ -429,7 +478,6 @@ window.Mom = (function () {
           S.wallets.append(row);
           return row;
         });
-        S.stage.classList.add('col');
         S.stage.append(S.count, S.wallets);
       },
       steps: [
@@ -497,15 +545,13 @@ window.Mom = (function () {
       ],
     },
 
-    // Lesson 5: find the missing number by counting in the times table.
+    // Lesson 5: find the missing number by packing boxes, then with frog jumps on a number line.
     unknown: {
       setup(S) {
         S.pile = make('<div class="cake-pile"></div>');
         for (let i = 0; i < 12; i++) S.pile.append(make('<span class="cake">🧁</span>'));
         S.shelf = make('<div class="cake-shelf packed"></div>');
-        S.chips = make('<div class="table-chips"></div>');
-        S.stage.classList.add('col');
-        S.stage.append(S.pile, S.shelf, S.chips);
+        S.stage.append(S.pile, S.shelf);
       },
       steps: [
         {
@@ -518,42 +564,43 @@ window.Mom = (function () {
           },
         },
         {
-          ar: 'نملا العلب: ٣، ٦، ٩، ١٢.',
-          en: 'Fill the boxes: 3, 6, 9, 12.',
-          ms: 3400,
+          ar: 'نملا العلب: ٣، ٦، ٩، ١٢. طلعوا ٤ علب!',
+          en: 'Fill the boxes: 3, 6, 9, 12. That is 4 boxes!',
+          ms: 3800,
           run: (S) => {
             const cakes = [...S.pile.children];
             for (let k = 0; k < 4; k++) {
               S.later(() => {
                 cakes.slice(k * 3, k * 3 + 3).forEach((c) => c.classList.add('gone'));
-                const box = make(`<div class="cake-box on"><span class="box-tally on">${S.N(3 * (k + 1))}</span>
-                  <span class="cake">🧁</span><span class="cake">🧁</span><span class="cake">🧁</span><b class="box-num">${S.N(k + 1)}</b></div>`);
-                S.shelf.append(box);
+                S.shelf.append(make(`<div class="cake-box on"><span class="box-tally on">${S.N(3 * (k + 1))}</span>
+                  <span class="cake">🧁</span><span class="cake">🧁</span><span class="cake">🧁</span><b class="box-num">${S.N(k + 1)}</b></div>`));
               }, k * 800);
             }
-            S.later(() => S.pile.classList.add('empty'), 3300);
+            S.later(() => {
+              S.pile.classList.add('empty');
+              S.shelf.querySelectorAll('.box-num').forEach((n) => n.classList.add('on'));
+              S.eq([[{ box: 4 }, '×', B(3), '=', G(12)]]);
+            }, 3300);
           },
         },
         {
-          ar: 'خلصوا في ٤ علب! يعني ٤ × ٣ = ١٢.',
-          en: 'They fit in 4 boxes! So 4 × 3 = 12.',
-          ms: 1800,
+          ar: 'والضفدع كمان يعرفها: بينط ٣ ٣ من الصفر لحد ما يوصل ١٢.',
+          en: 'The frog can find it too: it jumps 3 at a time from 0 until it reaches 12.',
+          ms: 3800,
           run: (S) => {
-            S.shelf.querySelectorAll('.box-num').forEach((n, i) => S.later(() => {
-              n.classList.add('on');
-              restartAnim(n, 'ping');
-            }, i * 400));
-            S.eq([[{ box: 4 }, '×', B(3), '=', G(12)]]);
+            S.line = numberLine(S, 12, 3);
+            swapStage(S, S.line);
+            S.later(() => S.line.place(0), 400);
+            for (let k = 0; k < 4; k++) S.later(() => S.line.jump(3 * k, 3 * (k + 1), S.N(k + 1)), 900 + k * 750);
+            S.eq([['?', '×', B(3), '=', G(12)]]);
           },
         },
         {
-          ar: 'السر: نعدّ في جدول ٣ لحد ما نوصل ١٢، ونشوف عدّينا كام مرة.',
-          en: 'The trick: count in the 3 times table until you reach 12, and see how many steps it took.',
-          ms: 2400,
+          ar: 'نط ٤ نطات، زي الـ ٤ علب بالظبط! يعني ٤ × ٣ = ١٢.',
+          en: 'It made 4 jumps, just like the 4 boxes! So 4 × 3 = 12.',
+          ms: 1200,
           run: (S) => {
-            for (let k = 1; k <= 4; k++) {
-              S.later(() => S.chips.append(make(`<span class="chip ${k === 4 ? 'hit' : ''}">${S.N(k)} × ${S.N(3)} = ${S.N(3 * k)}</span>`)), (k - 1) * 550);
-            }
+            S.line.querySelectorAll('.jump-num').forEach((n, i) => S.later(() => n.classList.add('lit'), i * 250));
             S.eq([[{ box: 4 }, '×', B(3), '=', G(12)]]);
           },
         },
@@ -592,12 +639,16 @@ window.Mom = (function () {
     st.$face.classList.remove('talking');
   }
 
+  function unlock() {
+    st.$next.disabled = false;
+    if (st.i === st.lesson.steps.length - 1) st.$next.classList.add('ready');
+  }
+
   function restart() {
     st.timers.forEach(clearTimeout);
     st.timers = [];
     stopAudio();
     st.$stage.innerHTML = '';
-    st.$stage.className = 'mom-stage';
     st.$eq.innerHTML = '';
     st.S = {
       stage: st.$stage,
@@ -605,7 +656,17 @@ window.Mom = (function () {
       lang: st.lang,
       t: (o) => o[st.lang],
       later,
+      unlock,
       eq: (lines) => (st.$eq.innerHTML = eqHtml(lines)),
+      // Points-table helpers shared by the scoring lessons.
+      cell: (k, col, v) => {
+        const td = st.$stage.querySelector(k === 'tot' ? '.tot .s' : `tr[data-k="${k}"] .${col}`);
+        if (td) td.innerHTML = `<span class="pop">${st.N(v)}</span>`;
+      },
+      focus: (k) => {
+        st.$stage.querySelectorAll('tr[data-k]').forEach((tr) => tr.classList.toggle('on', tr.dataset.k === k));
+        st.$stage.querySelectorAll('.rps-card').forEach((c) => c.classList.toggle('dim', k != null && !c.classList.contains(k)));
+      },
     };
     st.lesson.setup(st.S);
     void st.$stage.offsetWidth;
@@ -624,10 +685,7 @@ window.Mom = (function () {
     st.$next.textContent = last ? STR[st.lang].ok : STR[st.lang].next;
     st.$next.classList.remove('ready');
     st.$next.disabled = true;
-    later(() => {
-      st.$next.disabled = false;
-      if (last) st.$next.classList.add('ready');
-    }, s.ms || 600);
+    if (!s.gate) later(unlock, s.ms || 600);
 
     stopAudio();
     const a = st.audio;

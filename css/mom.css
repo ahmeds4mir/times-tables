@@ -366,24 +366,159 @@
   animation: pop-in .35s;
 }
 
-/* ---------- Darts game (zero and one) ---------- */
+/* ---------- Times-table staircase (one more / one less) ---------- */
 
-.dart-board { flex: none; width: clamp(150px, 26vh, 230px); height: auto; overflow: visible; }
-.dart-board text { fill: #fff; font-size: 19px; font-weight: 800; paint-order: stroke; stroke: rgba(0, 0, 0, .4); stroke-width: 3px; }
-.dart-board .ring { transition: opacity .3s; }
-.dart-board.focus .ring { opacity: .35; }
-.dart-board.focus .ring.on { opacity: 1; }
-.dart-board .dart { transform-box: fill-box; transform-origin: center; animation: pop-in .35s; }
-.dart-board .dart circle { fill: #2B2D42; stroke: #fff; stroke-width: 2.5; }
-.dart-board .dart.counted { animation: mom-ping .5s ease-out; }
-.dart-board .dart.counted circle { fill: #FFCC00; stroke: #2B2D42; }
+.stairs {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: clamp(200px, 36vh, 280px);
+  padding-top: 52px;
+}
 
-.dart-score { border-collapse: collapse; font-size: clamp(.8rem, 2.2vh, 1rem); font-weight: 800; text-align: center; }
-.dart-score td, .dart-score th { min-width: 58px; height: clamp(20px, 3.3vh, 30px); padding: 1px 10px; border: 2px solid #E2DCF7; }
-.dart-score th { background: #F3EEFF; font-size: .85em; }
-.dart-score tr.on td { background: #FFF3C4; }
-.dart-score .tot td { background: #E3F8EA; color: var(--green-dark); }
-.dart-score .pop { display: inline-block; animation: pop-in .3s; }
+.stair-col { display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; }
+.stair-col small { line-height: 1.6; font-size: .8rem; font-weight: 800; color: #6B6E85; white-space: nowrap; }
+
+.stair {
+  display: flex;
+  justify-content: center;
+  width: clamp(38px, 11vw, 48px);
+  height: calc(var(--h) * (100% - 1.6em));
+  padding-top: 3px;
+  border-radius: 8px 8px 0 0;
+  background: #B9AEF7;
+  color: #fff;
+  font-weight: 800;
+  transform: scaleY(0);
+  transform-origin: bottom;
+  transition: transform .4s cubic-bezier(.3, 1.4, .6, 1) var(--d), background .3s;
+}
+
+.stairs.on .stair { transform: scaleY(1); }
+.stair.here { background: var(--purple); }
+
+.stair-walker {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 46px;
+  height: 46px;
+  object-fit: contain;
+  translate: -50% 0;
+  opacity: 0;
+  transition: left .5s ease-in-out, top .5s ease-in-out, opacity .3s;
+}
+
+.stair-walker.on { opacity: 1; }
+
+/* ---------- Rows or columns choice (swap) ---------- */
+
+.mom-choices { display: flex; gap: 10px; opacity: 0; transform: scale(.6); transition: opacity .3s, transform .35s cubic-bezier(.3, 1.6, .6, 1); }
+.mom-choices.on { opacity: 1; transform: scale(1); }
+.mom-choices.on.mom-leaving { opacity: 0; transform: scale(.6); pointer-events: none; }
+
+.mom-choice {
+  padding: 8px 16px;
+  border-radius: 999px;
+  color: #fff;
+  font-size: clamp(1rem, 4.4vw, 1.2rem);
+  font-weight: 800;
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+.mom-choice.row { background: #E2572B; box-shadow: 0 4px 0 #A83C1A; }
+.mom-choice.col { background: #2B8BE2; box-shadow: 0 4px 0 #1C5FA0; }
+
+/* ---------- Party plates and rock-paper-scissors (zero and one) ---------- */
+
+.party { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+
+.party-plate {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(2, auto);
+  place-content: center;
+  gap: 2px;
+  width: clamp(84px, 14vh, 104px);
+  height: clamp(84px, 14vh, 104px);
+  border: 4px solid #D3D9EC;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 0 58%, #EEF1FA 59%);
+  box-shadow: 0 5px 0 #CBD1E6;
+  font-size: clamp(1.3rem, 3.8vh, 1.7rem);
+  transform: scale(0);
+  transition: transform .35s cubic-bezier(.3, 1.6, .6, 1);
+}
+
+.party-plate.on { transform: scale(1); }
+.party-plate .drink { line-height: 1; transition: opacity .4s, transform .4s; }
+.party-plate .drink.gone { opacity: 0; transform: translateY(-24px) scale(.4); }
+
+.party-plate .zero {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #E2572B;
+  font-size: 2.2rem;
+  font-weight: 800;
+  opacity: 0;
+  transition: opacity .3s .3s;
+}
+
+.party-plate.empty .zero { opacity: 1; }
+
+.rps-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; width: 100%; max-width: 340px; }
+
+.rps-card {
+  display: grid;
+  grid-template-columns: auto auto auto;
+  justify-content: center;
+  align-items: center;
+  gap: 1px;
+  padding: 3px 2px 2px;
+  border-radius: 10px;
+  font-size: clamp(1rem, 2.9vh, 1.3rem);
+  line-height: 1.1;
+  animation: pop-in .35s;
+  transition: opacity .3s;
+}
+
+.rps-card i { font-size: .55em; font-style: normal; color: #6B6E85; }
+.rps-card b { grid-column: 1 / -1; font-size: .55em; text-align: center; }
+.rps-card.win { background: #DDF6E6; }
+.rps-card.win b { color: var(--green-dark); }
+.rps-card.tie { background: #FFF1C2; }
+.rps-card.tie b { color: #B07A00; }
+.rps-card.lose { background: #ECEDF3; }
+.rps-card.lose b { color: #6B6E85; }
+.rps-card.dim { opacity: .3; }
+
+.points-table { border-collapse: collapse; font-size: clamp(.8rem, 2.2vh, 1rem); font-weight: 800; text-align: center; }
+.points-table td, .points-table th { min-width: 58px; height: clamp(20px, 3.3vh, 30px); padding: 1px 10px; border: 2px solid #E2DCF7; }
+.points-table th { background: #F3EEFF; font-size: .85em; }
+.points-table tr.on td { background: #FFF3C4; }
+.points-table .tot td { background: #E3F8EA; color: var(--green-dark); }
+.points-table .pop { display: inline-block; animation: pop-in .3s; }
+
+/* ---------- Frog jumps on a number line (missing number) ---------- */
+
+.numline { position: relative; width: min(100%, 330px); direction: ltr; }
+.numline svg { display: block; width: 100%; height: auto; overflow: visible; }
+.numline line { stroke: #2B2D42; stroke-width: 3; stroke-linecap: round; }
+.numline line.tick { stroke-width: 2; }
+.numline text { fill: #2B2D42; font-size: 13px; font-weight: 800; }
+.numline path { fill: none; stroke: #2ECC71; stroke-width: 3; stroke-dasharray: 5 4; animation: fade-in .4s; }
+.numline .jump-num circle { fill: #fff; stroke: #2ECC71; stroke-width: 2; }
+.numline .jump-num text { font-size: 12px; }
+.numline .jump-num { animation: pop-in .35s; transform-box: fill-box; transform-origin: center; }
+.numline .jump-num.lit circle { fill: #2ECC71; }
+.numline .jump-num.lit text { fill: #fff; }
+.numline .jump-num.lit { animation: mom-ping .45s ease-out; }
+.numline .frog { position: absolute; top: 0; left: 0; font-size: 2rem; line-height: 1; }
+
+.mom-leaving { opacity: 0 !important; transform: scale(.9); transition: opacity .3s, transform .3s; }
 
 /* ---------- Money (times 10, 11, 12) ---------- */
 
@@ -439,7 +574,7 @@
   .mom-say { min-height: 0; padding: 7px 12px; font-size: .95rem; line-height: 1.35; }
   .mom-eq { min-height: 2.2em; font-size: 1.25rem; }
   .mom-actions .big-btn { padding-block: 7px; }
-  .dart-board { width: clamp(140px, 23vh, 230px); }
+  .stairs { padding-top: 48px; }
 }
 
 /* ---------- Keyframes ---------- */
