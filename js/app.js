@@ -9,7 +9,31 @@
   const EMOJI = ['🍎', '🍓', '⭐', '🐟', '🌸', '🍪', '🎈', '🐞', '🍊', '💎'];
   const COLORS = ['#FF5E7E', '#FF8A3D', '#F5B700', '#2ECC71', '#1FB5C9', '#4A90FF', '#7B61FF', '#D94FE8', '#FF6FB5', '#00B894'];
   const QUESTIONS_PER_ROUND = 10;
-  const CHAPTERS = { chapter1: Chapter1, chapter2: Chapter2 };
+  const CHAPTERS = {
+    chapter1: Chapter1,
+    chapter2: Chapter2,
+    ch3: Chapter3,
+    ch4: Chapter4,
+    ch5: Chapter5,
+    ch6: Chapter6,
+    ch7: Chapter7,
+    ch8: Chapter8,
+    ch9: Chapter9,
+    ch10: Chapter10,
+  };
+  const START_TILES = [
+    { key: 'chapter1', icon: null, bg: '#7B61FF,#1FB5C9', ar: 'قواعد الضرب', en: 'Multiplication Rules' },
+    { key: 'chapter2', icon: '⏰', bg: '#FFB13D,#FF5E7E', ar: 'الوقت', en: 'Time' },
+    { key: 'ch3', icon: '🍬', bg: '#FF6FB5,#FF9A8B', ar: 'القسمة', en: 'Division' },
+    { key: 'ch4', icon: '🏴‍☠️', bg: '#E17055,#FDCB6E', ar: 'الجمع والطرح', en: 'Add & Subtract' },
+    { key: 'ch5', icon: '📏', bg: '#0984E3,#74B9FF', ar: 'الطول', en: 'Length' },
+    { key: 'ch6', icon: '📊', bg: '#00B894,#55EFC4', ar: 'الجداول والرسوم', en: 'Tables & Graphs' },
+    { key: 'ch7', icon: '🏎️', bg: '#E84393,#FD79A8', ar: 'الحساب الذهني', en: 'Mental Math' },
+    { key: 'ch8', icon: '🚚', bg: '#F39C12,#FDCB6E', ar: 'القسمة بباقٍ', en: 'Remainders' },
+    { key: 'ch9', icon: '🚀', bg: '#6C5CE7,#A29BFE', ar: 'الأعداد الكبيرة', en: 'Big Numbers' },
+    { key: 'ch10', icon: '🤖', bg: '#00CEC9,#0984E3', ar: 'الضرب الرأسي', en: 'Column ×' },
+  ];
+  const SAVE_KEYS = { chapter1: 'mt.ch1', chapter2: 'mt.ch2' };
   const AVATAR_MOODS = ['hello', 'think', 'cheer', 'encourage', 'trophy'];
   function preloadAvatar() {
     AVATAR_MOODS.forEach((mood) => {
@@ -32,11 +56,7 @@
       setupGo: 'هيا نبدأ! 🚀',
       startTables: 'جدول الضرب',
       startTablesSub: 'راجع والعب 🎮',
-      startCh1: 'الفصل الأول: قواعد الضرب',
-      startCh1Sub: 'مغامرة الوحوش ⚔️',
-      startCh2: 'الفصل الثاني: الوقت',
-      startCh2Sub: 'يوم مع البطل ⏰',
-      pick: 'اختر جدولاً لنبدأ المغامرة!',
+      chapterN: (n) => `الفصل ${n}`,
       table: 'جدول',
       mixed: 'تحدي الأبطال (كل الجداول)',
       review: 'هيا نراجع جدول',
@@ -74,11 +94,7 @@
       setupGo: "Let's start! 🚀",
       startTables: 'Times Tables',
       startTablesSub: 'Review and play 🎮',
-      startCh1: 'Chapter 1: Rules of Multiplication',
-      startCh1Sub: 'Monster adventure ⚔️',
-      startCh2: 'Chapter 2: Time',
-      startCh2Sub: 'A day with the hero ⏰',
-      pick: 'Pick a table to start the adventure!',
+      chapterN: (n) => `Chapter ${n}`,
       table: 'Table',
       mixed: 'Champion Challenge (all tables)',
       review: "Let's review the table of",
@@ -105,7 +121,6 @@
     },
     arF: {
       startTablesSub: 'راجعي والعبي 🎮',
-      pick: 'اختاري جدولاً لنبدأ المغامرة!',
       praise: ['ممتاز! 🌟', 'أحسنتِ! 🎉', 'رائع جداً! 🚀', 'برافو عليكِ! 👏', 'شاطرة! 💪', 'عبقرية! 🧠', 'هايلة! 🦁'],
       thinking: ['فكّري جيداً! 🤔', 'أنتِ تستطيعين! 💪', 'هيا يا بطلة! 🚀', 'أنا واثقة فيكِ! 😊'],
       cheerUp: ['ولا يهمك! المرة الجاية هتعرفيها 💛', 'غلطة صغيرة، كمّلي يا بطلة! 💪', 'كلنا بنتعلم من أخطائنا 😊'],
@@ -113,10 +128,8 @@
       result: ['لا بأس، التمرين يصنع الأبطال! 💪', 'بداية جيدة! 👍', 'رائع جداً! 🌟', 'أنتِ بطلة جدول الضرب! 🏆'],
       reviewAgain: 'راجعي الجدول 📖',
       chooseOther: 'اختاري جدولاً آخر 🏠',
-      startCh2Sub: 'يوم مع البطلة ⏰',
     },
     enF: {
-      startCh2Sub: 'A day with the heroine ⏰',
       result: ['Keep practicing, champion! 💪', 'Good start! 👍', 'Really great! 🌟', 'Times table heroine! 🏆'],
     },
   };
@@ -180,14 +193,14 @@
     </div>`;
   }
 
+  // Emoji size shrinks with the number of rows/columns so 10 × 10 still fits a phone screen.
   function arrayVisual(a, b, emoji) {
-    const biggest = Math.max(a, b);
-    const size = biggest <= 4 ? 2 : biggest <= 6 ? 1.6 : biggest <= 8 ? 1.25 : 1.05;
+    const size = Math.min(30, Math.floor(150 / a) - 3, Math.floor(260 / b) - 4);
     const cells = Array.from({ length: b }, () => `<span>${emoji}</span>`).join('');
     const rows = range(1, a)
-      .map((i) => `<div class="arr-row pop-in" style="--d:${i * 60}ms">${cells}</div>`)
+      .map((i) => `<div class="arr-row pop-in" style="--d:${i * 50}ms">${cells}</div>`)
       .join('');
-    return `<div class="array" style="--s:${size}rem">${rows}</div>
+    return `<div class="array" style="--s:${size}px">${rows}</div>
       <p class="array-caption">${t('groups', num(a), num(b))}</p>`;
   }
 
@@ -214,10 +227,22 @@
   function go(next) {
     clearTimeout(pendingTimer);
     if ('speechSynthesis' in window) speechSynthesis.cancel();
-    if (CHAPTERS[screen.name]) CHAPTERS[screen.name].leave();
+    Voice.stop();
+    UI.closeSheet();
+    if (CHAPTERS[screen.name] && next.name !== screen.name) CHAPTERS[screen.name].leave();
     screen = next;
     render();
-    window.scrollTo({ top: 0 });
+    UI.top();
+  }
+
+  function chapterStars(key) {
+    let saved;
+    try {
+      saved = JSON.parse(localStorage.getItem(SAVE_KEYS[key] || `mt.${key}`) || '{}');
+    } catch {
+      saved = {};
+    }
+    return Object.values(saved).reduce((a, b) => a + (Number(b) || 0), 0);
   }
 
   function setLabel(el, text) {
@@ -252,38 +277,40 @@
   // ---------- Start ----------
 
   function renderStart() {
+    const tiles = START_TILES.map((c, i) => {
+      const icon = c.icon ? `<span class="tile-icon">${c.icon}</span>` : `<img class="tile-icon" src="${Profile.heroImg('ready')}" alt="" draggable="false">`;
+      const earned = chapterStars(c.key);
+      return `<button class="chapter-tile pop-in" type="button" data-chapter="${c.key}" style="--bg:linear-gradient(135deg,${c.bg});--d:${i * 40}ms">
+          ${icon}
+          <span class="tile-text"><small>${t('chapterN', num(i + 1))}</small><b>${c[lang]}</b></span>
+          ${earned ? `<span class="tile-stars">⭐${num(earned)}</span>` : ''}
+        </button>`;
+    }).join('');
+
     $app.innerHTML = `
       <section class="start">
-        ${mascot('hello', t('startTalk', Profile.name), 'large')}
-        <div class="start-cards">
-          <button class="start-card pop-in" type="button" id="tablesBtn" style="--bg:linear-gradient(135deg,#FF5E7E,#FFC93C);--edge:#C93D5C">
-            <span class="start-icon" dir="ltr">${num(3)}×${num(4)}</span>
-            <b>${t('startTables')}</b>
-            <span>${t('startTablesSub')}</span>
-          </button>
-          <button class="start-card pop-in" type="button" data-chapter="chapter1" style="--bg:linear-gradient(135deg,#7B61FF,#1FB5C9);--edge:#5A43D6;--d:120ms">
-            <img src="${Profile.heroImg('ready')}" alt="" draggable="false">
-            <b>${t('startCh1')}</b>
-            <span>${t('startCh1Sub')}</span>
-          </button>
-          <button class="start-card pop-in" type="button" data-chapter="chapter2" style="--bg:linear-gradient(135deg,#FFB13D,#FF5E7E);--edge:#C93D5C;--d:240ms">
-            <span class="start-icon">⏰</span>
-            <b>${t('startCh2')}</b>
-            <span>${t('startCh2Sub')}</span>
-          </button>
-        </div>
+        ${mascot('hello', t('startTalk', Profile.name))}
+        <button class="tables-banner pop-in" type="button" id="tablesBtn">
+          <span class="start-icon" dir="ltr">${num(3)}×${num(4)}</span>
+          <b>${t('startTables')}</b>
+          <span>${t('startTablesSub')}</span>
+        </button>
+        <div class="chapter-tiles">${tiles}</div>
         <div class="center"><button class="link-btn" type="button" id="editProfileBtn">${t('editProfile')}</button></div>
       </section>`;
 
     document.getElementById('tablesBtn').addEventListener('click', () => {
       Sounds.tap();
       go({ name: 'home' });
+      Voice.play('tables', lang);
     });
     $app.querySelectorAll('[data-chapter]').forEach((btn) =>
       btn.addEventListener('click', () => {
+        const key = btn.dataset.chapter;
         Sounds.tap();
-        CHAPTERS[btn.dataset.chapter].enter();
-        go({ name: btn.dataset.chapter });
+        CHAPTERS[key].enter();
+        go({ name: key });
+        if (key === 'chapter1' || key === 'chapter2') Voice.play(key, lang);
       })
     );
     document.getElementById('editProfileBtn').addEventListener('click', () => {
@@ -368,12 +395,13 @@
 
     $app.innerHTML = `
       <section class="home">
-        ${mascot('hello', t('pick'), 'large')}
+        ${mascot('hello', Voice.bubble('tables', lang))}
         <div class="grid">${cards}</div>
         <button class="mixed-card pop-in" type="button" style="--d:550ms" data-table="mix">
           <span>🎲 ${t('mixed')}</span>${starsHtml(stars.mix || 0)}
         </button>
       </section>`;
+    Voice.wire($app, lang);
 
     $app.querySelectorAll('[data-table]').forEach((btn) =>
       btn.addEventListener('click', () => {
@@ -401,11 +429,9 @@
     $app.innerHTML = `
       <section class="review" style="--c:${color}">
         <h2>${emoji} ${t('review')} ${num(n)} ${emoji}</h2>
-        ${mascot('think', t('reviewTalk'))}
-        <div class="review-layout">
-          <div class="facts">${rows}</div>
-          <div class="visual card" id="visual">${arrayVisual(n, 1, emoji)}</div>
-        </div>
+        <p class="review-talk">${t('reviewTalk')}</p>
+        <div class="visual card" id="visual">${arrayVisual(n, 1, emoji)}</div>
+        <div class="facts">${rows}</div>
         <div class="center"><button class="big-btn" type="button" id="playBtn">${t('play')}</button></div>
       </section>`;
 
@@ -417,10 +443,6 @@
         $app.querySelectorAll('.fact-row.selected').forEach((r) => r.classList.remove('selected'));
         row.classList.add('selected');
         $visual.innerHTML = arrayVisual(n, b, emoji);
-        setMascot('hello', `${num(n)} × ${num(b)} = ${num(n * b)} 🎉`, 'nod');
-        if (window.matchMedia('(max-width: 720px)').matches) {
-          $visual.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }
         speak(n, b);
       })
     );
@@ -544,15 +566,16 @@
       btn.classList.add('wrong');
       Sounds.wrong();
       setMascot('encourage', pick(t('cheerUp')), 'nod');
-      $feedback.innerHTML = `
-        <div class="oops">${t('oops')} <b>${num(correctValue)}</b></div>
-        <div class="card visual hint-visual">${arrayVisual(q.a, q.b, EMOJI[q.table - 1])}</div>
-        <button class="big-btn" type="button" id="nextBtn">${t('next')}</button>`;
-      document.getElementById('nextBtn').addEventListener('click', () => {
-        Sounds.tap();
-        nextQuestion();
-      });
-      $feedback.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      pendingTimer = setTimeout(
+        () =>
+          UI.sheet(
+            `<div class="oops">${t('oops')} <b>${num(correctValue)}</b></div>
+             <div class="visual hint-visual" style="--c:${COLORS[q.table - 1]}">${arrayVisual(q.a, q.b, EMOJI[q.table - 1])}</div>`,
+            t('next'),
+            nextQuestion
+          ),
+        600
+      );
     }
   }
 
@@ -626,6 +649,8 @@
     lang = lang === 'ar' ? 'en' : 'ar';
     localStorage.setItem('mt.lang', lang);
     Sounds.tap();
+    Voice.stop();
+    UI.closeSheet();
     if (screen.name === 'quiz' && quiz.locked) nextQuestion();
     else render();
   });

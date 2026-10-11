@@ -1,5 +1,7 @@
 // Bump the version whenever app files change so phones download the update.
-const CACHE = 'times-tables-v3';
+const CACHE = 'times-tables-v4';
+
+const VOICES = ['tables', 'chapter1', 'chapter2', 'ch3', 'ch4', 'ch5', 'ch6', 'ch7', 'ch8', 'ch9', 'ch10'];
 
 const APP_FILES = [
   './',
@@ -8,12 +10,19 @@ const APP_FILES = [
   'css/styles.css',
   'css/chapter1.css',
   'css/chapter2.css',
+  'css/engine.css',
   'js/profile.js',
   'js/sounds.js',
   'js/confetti.js',
+  'js/intros.js',
+  'js/voice.js',
+  'js/ui.js',
   'js/chapter1.js',
   'js/chapter2.js',
+  'js/engine.js',
+  ...[3, 4, 5, 6, 7, 8, 9, 10].map((n) => `js/chapters/ch${n}.js`),
   'js/app.js',
+  ...VOICES.flatMap((v) => [`audio/ar/${v}.mp3`, `audio/en/${v}.mp3`]),
   'img/ch1/hero-ready.png',
   'img/ch1/hero-attack.png',
   'img/ch1/hero-hurt.png',

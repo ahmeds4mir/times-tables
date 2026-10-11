@@ -389,9 +389,10 @@ window.Chapter1 = (function () {
     ctx.root.innerHTML = `
       <section class="ch1 ch1-map">
         <h2 class="ch1-title">${s.chapter}</h2>
-        ${heroTalk('ready', s.mapTalk)}
+        ${heroTalk('ready', Voice.bubble('chapter1', ctx.lang()))}
         <div class="levels">${cards}</div>
       </section>`;
+    Voice.wire(ctx.root, ctx.lang());
 
     ctx.root.querySelectorAll('.level-card').forEach((btn) =>
       btn.addEventListener('click', () => {
@@ -556,23 +557,25 @@ window.Chapter1 = (function () {
       }, 350);
 
       const rule = s.lessons[q.lesson].rule;
-      $('fb').innerHTML = `
-        <div class="oops">${s.answerIs} <b>${N(q.answer)}</b></div>
-        <div class="card hint-card"><p class="hint-rule">💡 ${rule}</p>${visualHtml(q.visual)}</div>
-        <button class="big-btn" type="button" id="nextBtn">${st.heroHp <= 0 ? s.finish : s.nextQ}</button>`;
-      $('nextBtn').addEventListener('click', () => {
-        Sounds.tap();
-        if (st.heroHp <= 0) {
-          finish(false);
-          return;
-        }
-        st.q = newQuestion();
-        st.locked = false;
-        st.talk = pick(s.startTalk);
-        renderBattle();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      });
-      later(() => $('fb').scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 600);
+      later(
+        () =>
+          UI.sheet(
+            `<div class="oops">${s.answerIs} <b>${N(q.answer)}</b></div>
+             <div class="hint-box" style="--c:${LESSONS[st.lesson].color}"><p class="hint-rule">💡 ${rule}</p>${visualHtml(q.visual)}</div>`,
+            st.heroHp <= 0 ? s.finish : s.nextQ,
+            () => {
+              if (st.heroHp <= 0) {
+                finish(false);
+                return;
+              }
+              st.q = newQuestion();
+              st.locked = false;
+              st.talk = pick(s.startTalk);
+              renderBattle();
+            }
+          ),
+        900
+      );
     }
   }
 
@@ -634,7 +637,7 @@ window.Chapter1 = (function () {
   function show(view) {
     st.view = view;
     render(ctx);
-    window.scrollTo({ top: 0 });
+    UI.top();
   }
 
   function render(context) {
@@ -662,7 +665,10 @@ window.Chapter1 = (function () {
       preload();
       st.view = 'map';
     },
-    leave: clearTimers,
+    leave() {
+      clearTimers();
+      UI.closeSheet();
+    },
     render,
   };
 })();

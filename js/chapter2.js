@@ -704,9 +704,10 @@ window.Chapter2 = (function () {
     ctx.root.innerHTML = `
       <section class="c2 c2-map">
         <h2 class="ch1-title">${s.chapter}</h2>
-        ${heroTalk(s.mapTalk)}
+        ${heroTalk(Voice.bubble('chapter2', ctx.lang()))}
         <div class="levels">${lab}${cards}</div>
       </section>`;
+    Voice.wire(ctx.root, ctx.lang());
 
     ctx.root.querySelectorAll('.level-card').forEach((btn) =>
       btn.addEventListener('click', () => {
@@ -740,21 +741,19 @@ window.Chapter2 = (function () {
     ctx.root.innerHTML = `
       <section class="c2 c2-lab" style="--c:#00B894">
         <h2 class="ch1-title">🕰️ ${s.labName}</h2>
-        ${heroTalk(s.labTalk)}
-        <div class="lab-layout">
-          <div class="card lab-clock">
-            ${clockSvg(st.lab, { id: 'dragClock', cls: 'interactive' })}
-            ${stepButtons(5)}
-            <div class="lab-digital" dir="ltr" id="labTime">${fmtTime(st.lab)}</div>
-            <p class="lab-say" id="labSay">${labReading(st.lab)}</p>
+        <p class="review-talk">${s.labTalk}</p>
+        <div class="card lab-clock">
+          ${clockSvg(st.lab, { id: 'dragClock', cls: 'interactive' })}
+          ${stepButtons(5)}
+          <div class="lab-digital" dir="ltr" id="labTime">${fmtTime(st.lab)}</div>
+          <p class="lab-say" id="labSay">${labReading(st.lab)}</p>
+          <div class="lab-actions">
+            <button class="big-btn alt" type="button" id="nowBtn">${s.now}</button>
+            <button class="big-btn alt2" type="button" id="randBtn">${s.random}</button>
           </div>
-          <div class="card lab-tips">
-            <ul>${s.tips.map((x) => `<li>${x}</li>`).join('')}</ul>
-            <div class="lab-actions">
-              <button class="big-btn alt" type="button" id="nowBtn">${s.now}</button>
-              <button class="big-btn alt2" type="button" id="randBtn">${s.random}</button>
-            </div>
-          </div>
+        </div>
+        <div class="card lab-tips">
+          <ul>${s.tips.map((x) => `<li>${x}</li>`).join('')}</ul>
         </div>
       </section>`;
 
@@ -929,15 +928,15 @@ window.Chapter2 = (function () {
     $say.textContent = pick(oly ? s.olyMiss : s.late);
     const last = st.idx >= st.missions.length - 1;
     const answerLine = m.kind === 'stopwatch' ? '' : `<div class="oops">${s.answerIs} <b>${choiceLabel(m, m.answer)}</b></div>`;
-    $('fb').innerHTML = `
-      ${answerLine}
-      <div class="card hint-card">${hintHtml(m, extra)}</div>
-      <button class="big-btn" type="button" id="nextBtn">${last ? s.finish : oly ? s.finish : s.next}</button>`;
-    $('nextBtn').addEventListener('click', () => {
-      Sounds.tap();
-      next();
-    });
-    later(() => $('fb').scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 300);
+    later(
+      () =>
+        UI.sheet(
+          `${answerLine}<div class="hint-box" style="--c:${LEVELS[st.level].color}">${hintHtml(m, extra)}</div>`,
+          last ? s.finish : oly ? s.finish : s.next,
+          next
+        ),
+      700
+    );
   }
 
   function next() {
@@ -949,7 +948,7 @@ window.Chapter2 = (function () {
       return;
     }
     renderPlay();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    UI.top();
   }
 
   function starsFor(ok) {
@@ -1010,7 +1009,7 @@ window.Chapter2 = (function () {
   function show(view) {
     st.view = view;
     render(ctx);
-    window.scrollTo({ top: 0 });
+    UI.top();
   }
 
   function render(context) {
@@ -1035,7 +1034,10 @@ window.Chapter2 = (function () {
       clearTimers();
       st.view = 'map';
     },
-    leave: clearTimers,
+    leave() {
+      clearTimers();
+      UI.closeSheet();
+    },
     render,
   };
 })();

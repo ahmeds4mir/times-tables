@@ -26,7 +26,7 @@ jobs:
       - name: Collect web files
         run: |
           mkdir -p build/www
-          cp -r index.html manifest.webmanifest sw.js css js img icons build/www/
+          cp -r index.html manifest.webmanifest sw.js css js img icons audio build/www/
 
       - name: Create Android project
         working-directory: build
@@ -36,6 +36,8 @@ jobs:
           npx cap init "جدول الضرب" com.timestables.kids --web-dir www
           npx cap add android
           npx cap sync android
+          sed -i 's/<activity\b/<activity android:screenOrientation="portrait"/' android/app/src/main/AndroidManifest.xml
+          grep -q 'screenOrientation="portrait"' android/app/src/main/AndroidManifest.xml
 
       - name: Use avatar as app icon
         working-directory: build/android/app/src/main/res
