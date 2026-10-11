@@ -201,6 +201,18 @@ window.Chapter1 = (function () {
         unknownCols: (c, a, b) => `${c} dots in ${a} rows → ${b} in each row`,
       },
     },
+    arF: {
+      mapTalk: 'ساعديني أهزم وحوش قواعد الضرب! اختاري مرحلة ⚔️',
+      locked: 'اهزمي الوحوش الستة أولاً، ثم نواجه الزعيم! 🔒',
+      startTalk: ['هيا نهزمه! ⚔️', 'ركّزي يا بطلة! 🎯', 'أنتِ أقوى منه! 💪'],
+      hit: ['ضربة قوية! 💥', 'أحسنتِ يا بطلة! ⚔️', 'رائع! الوحش يضعف! 🔥', 'برافو! 🌟', 'هجوم ممتاز! 🚀'],
+      hurt: ['أوه! الوحش ضربنا 😵 لكن لا تستسلمي!', 'لا بأس، انظري للقاعدة وحاولي! 💛'],
+      win: (m) => `هزمتِ ${m}! 🎉`,
+      bossWin: 'أنتِ بطلة الفصل الأول! 🏆',
+      loseTalk: 'راجعي القاعدة وارجعي أقوى! 💪',
+      review: 'راجعي القاعدة 📖',
+      tryAgain: 'حاولي مرة أخرى ⚔️',
+    },
   };
 
   // ---------- State ----------
@@ -209,15 +221,17 @@ window.Chapter1 = (function () {
   let timers = [];
   const st = { view: 'map', lesson: 0, monsterHp: MONSTER_HP, heroHp: HERO_HP, q: null, locked: false, recent: [], talk: null, fresh: true, win: false, lang: null };
 
-  const S = () => STR[ctx.lang()];
+  const S = () => Profile.strings(STR, ctx.lang());
   const N = (n) => ctx.num(n);
   const dir = () => (ctx.lang() === 'ar' ? 'rtl' : 'ltr');
-  const img = (name) => `img/ch1/${name}.png`;
+  const img = (name) => (name.startsWith('hero-') ? Profile.heroImg(name.slice(5)) : `img/ch1/${name}.png`);
   const $ = (id) => document.getElementById(id);
 
-  ['hero-ready', 'hero-attack', 'hero-hurt', 'hero-victory', ...LESSONS.map((l) => l.monster)].forEach((name) => {
-    new Image().src = img(name);
-  });
+  function preload() {
+    ['hero-ready', 'hero-attack', 'hero-hurt', 'hero-victory', ...LESSONS.map((l) => l.monster)].forEach((name) => {
+      new Image().src = img(name);
+    });
+  }
 
   function later(fn, ms) {
     timers.push(setTimeout(fn, ms));
@@ -645,6 +659,7 @@ window.Chapter1 = (function () {
   return {
     enter() {
       clearTimers();
+      preload();
       st.view = 'map';
     },
     leave: clearTimers,

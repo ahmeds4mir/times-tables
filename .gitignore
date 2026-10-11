@@ -1,3 +1,4 @@
 # Original photos stay private; only the cartoon avatars in img/ are published.
 /DSC_*
 *.JPG.jpeg
+/WhatsApp Image*

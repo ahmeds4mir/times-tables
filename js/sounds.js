@@ -103,6 +103,12 @@ window.Sounds = (function () {
     roar() {
       play(() => slide(240, 90, 0, 0.45, 'sawtooth', 0.1));
     },
+    tick() {
+      play(() => tone(1800, 0, 0.03, 'square', 0.04));
+    },
+    bell() {
+      play(() => [0, 0.14, 0.28].forEach((s) => tone(1318.5, s, 0.12, 'square', 0.06)));
+    },
     fanfare() {
       play(() => {
         const notes = [523.25, 659.25, 783.99, 1046.5, 783.99, 1046.5];

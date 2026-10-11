@@ -23,7 +23,7 @@
 .start-card:hover { transform: translateY(-4px) rotate(-1deg); }
 .start-card:active { transform: translateY(6px); box-shadow: 0 3px 0 var(--edge); }
 .start-card img { width: 120px; height: 120px; object-fit: contain; filter: drop-shadow(0 6px 6px rgba(0, 0, 0, .2)); }
-.start-icon {
+.start-card .start-icon {
   display: flex;
   align-items: center;
   justify-content: center;

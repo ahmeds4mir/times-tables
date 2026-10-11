@@ -9,19 +9,33 @@
   const EMOJI = ['🍎', '🍓', '⭐', '🐟', '🌸', '🍪', '🎈', '🐞', '🍊', '💎'];
   const COLORS = ['#FF5E7E', '#FF8A3D', '#F5B700', '#2ECC71', '#1FB5C9', '#4A90FF', '#7B61FF', '#D94FE8', '#FF6FB5', '#00B894'];
   const QUESTIONS_PER_ROUND = 10;
+  const CHAPTERS = { chapter1: Chapter1, chapter2: Chapter2 };
   const AVATAR_MOODS = ['hello', 'think', 'cheer', 'encourage', 'trophy'];
-  AVATAR_MOODS.forEach((mood) => {
-    new Image().src = `img/avatar-${mood}.jpg`;
-  });
+  function preloadAvatar() {
+    AVATAR_MOODS.forEach((mood) => {
+      new Image().src = Profile.avatarImg(mood);
+    });
+  }
+  preloadAvatar();
 
   const STRINGS = {
     ar: {
       title: 'مغامرات الرياضيات 🎈',
-      startTalk: 'ماذا نتعلم اليوم؟ 😊',
+      startTalk: (n) => `أهلاً يا ${n}! ماذا نتعلم اليوم؟ 😊`,
+      editProfile: '✏️ تغيير الشخصية أو الاسم',
+      setupTalk: 'أهلاً! من سيلعب معنا اليوم؟ 😊',
+      setupHero: '١. الشخصية',
+      setupName: '٢. الاسم',
+      namePlaceholder: 'الاسم هنا ✏️',
+      boy: 'ولد',
+      girl: 'بنت',
+      setupGo: 'هيا نبدأ! 🚀',
       startTables: 'جدول الضرب',
       startTablesSub: 'راجع والعب 🎮',
       startCh1: 'الفصل الأول: قواعد الضرب',
       startCh1Sub: 'مغامرة الوحوش ⚔️',
+      startCh2: 'الفصل الثاني: الوقت',
+      startCh2Sub: 'يوم مع البطل ⏰',
       pick: 'اختر جدولاً لنبدأ المغامرة!',
       table: 'جدول',
       mixed: 'تحدي الأبطال (كل الجداول)',
@@ -49,11 +63,21 @@
     },
     en: {
       title: 'Math Adventures 🎈',
-      startTalk: 'What shall we learn today? 😊',
+      startTalk: (n) => `Hi ${n}! What shall we learn today? 😊`,
+      editProfile: '✏️ Change character or name',
+      setupTalk: "Hi! Who's playing with us today? 😊",
+      setupHero: '1. Pick your character',
+      setupName: '2. Your name',
+      namePlaceholder: 'Type your name ✏️',
+      boy: 'Boy',
+      girl: 'Girl',
+      setupGo: "Let's start! 🚀",
       startTables: 'Times Tables',
       startTablesSub: 'Review and play 🎮',
       startCh1: 'Chapter 1: Rules of Multiplication',
       startCh1Sub: 'Monster adventure ⚔️',
+      startCh2: 'Chapter 2: Time',
+      startCh2Sub: 'A day with the hero ⏰',
       pick: 'Pick a table to start the adventure!',
       table: 'Table',
       mixed: 'Champion Challenge (all tables)',
@@ -79,18 +103,34 @@
       lang: 'العربية',
       sound: 'Sound',
     },
+    arF: {
+      startTablesSub: 'راجعي والعبي 🎮',
+      pick: 'اختاري جدولاً لنبدأ المغامرة!',
+      praise: ['ممتاز! 🌟', 'أحسنتِ! 🎉', 'رائع جداً! 🚀', 'برافو عليكِ! 👏', 'شاطرة! 💪', 'عبقرية! 🧠', 'هايلة! 🦁'],
+      thinking: ['فكّري جيداً! 🤔', 'أنتِ تستطيعين! 💪', 'هيا يا بطلة! 🚀', 'أنا واثقة فيكِ! 😊'],
+      cheerUp: ['ولا يهمك! المرة الجاية هتعرفيها 💛', 'غلطة صغيرة، كمّلي يا بطلة! 💪', 'كلنا بنتعلم من أخطائنا 😊'],
+      reviewTalk: 'اضغطي على أي سطر وأنا هوريكي الرسم! 👆',
+      result: ['لا بأس، التمرين يصنع الأبطال! 💪', 'بداية جيدة! 👍', 'رائع جداً! 🌟', 'أنتِ بطلة جدول الضرب! 🏆'],
+      reviewAgain: 'راجعي الجدول 📖',
+      chooseOther: 'اختاري جدولاً آخر 🏠',
+      startCh2Sub: 'يوم مع البطلة ⏰',
+    },
+    enF: {
+      startCh2Sub: 'A day with the heroine ⏰',
+      result: ['Keep practicing, champion! 💪', 'Good start! 👍', 'Really great! 🌟', 'Times table heroine! 🏆'],
+    },
   };
 
   let lang = localStorage.getItem('mt.lang') === 'en' ? 'en' : 'ar';
   let stars = JSON.parse(localStorage.getItem('mt.stars') || '{}');
-  let screen = { name: 'start' };
+  let screen = { name: Profile.exists ? 'start' : 'setup' };
   let quiz = null;
   let pendingTimer = null;
 
   const formatters = { ar: new Intl.NumberFormat('ar-EG'), en: new Intl.NumberFormat('en-US') };
   const num = (n) => formatters[lang].format(n);
   const t = (key, ...args) => {
-    const v = STRINGS[lang][key];
+    const v = Profile.strings(STRINGS, lang)[key];
     return typeof v === 'function' ? v(...args) : v;
   };
 
@@ -114,7 +154,7 @@
 
   function mascot(mood, text, size = '') {
     return `<div class="mascot-row ${size}" id="mascot">
-      <img class="avatar pop-in" src="img/avatar-${mood}.jpg" alt="" draggable="false">
+      <img class="avatar pop-in" src="${Profile.avatarImg(mood)}" alt="" draggable="false">
       <div class="bubble pop-in" style="--d:120ms">${text}</div>
     </div>`;
   }
@@ -124,7 +164,7 @@
     if (!$m) return;
     const $img = $m.querySelector('.avatar');
     const $bubble = $m.querySelector('.bubble');
-    $img.src = `img/avatar-${mood}.jpg`;
+    $img.src = Profile.avatarImg(mood);
     $bubble.innerHTML = text;
     for (const el of [$img, $bubble]) {
       el.classList.remove('pop-in', 'jump', 'nod');
@@ -174,7 +214,7 @@
   function go(next) {
     clearTimeout(pendingTimer);
     if ('speechSynthesis' in window) speechSynthesis.cancel();
-    if (screen.name === 'chapter1') Chapter1.leave();
+    if (CHAPTERS[screen.name]) CHAPTERS[screen.name].leave();
     screen = next;
     render();
     window.scrollTo({ top: 0 });
@@ -195,13 +235,14 @@
     $soundBtn.textContent = Sounds.enabled ? '🔊' : '🔇';
     setLabel($soundBtn, t('sound'));
     setLabel($homeBtn, t('home'));
-    $homeBtn.classList.toggle('hidden', screen.name === 'start');
+    $homeBtn.classList.toggle('hidden', screen.name === 'start' || !Profile.exists);
   }
 
   function render() {
     renderTopbar();
-    if (screen.name === 'start') renderStart();
-    else if (screen.name === 'chapter1') Chapter1.render({ root: $app, lang: () => lang, num, starsHtml });
+    if (screen.name === 'setup') renderSetup();
+    else if (screen.name === 'start') renderStart();
+    else if (CHAPTERS[screen.name]) CHAPTERS[screen.name].render({ root: $app, lang: () => lang, num, starsHtml });
     else if (screen.name === 'home') renderHome();
     else if (screen.name === 'review') renderReview(screen.table);
     else if (screen.name === 'quiz') renderQuiz();
@@ -213,29 +254,102 @@
   function renderStart() {
     $app.innerHTML = `
       <section class="start">
-        ${mascot('hello', t('startTalk'), 'large')}
+        ${mascot('hello', t('startTalk', Profile.name), 'large')}
         <div class="start-cards">
           <button class="start-card pop-in" type="button" id="tablesBtn" style="--bg:linear-gradient(135deg,#FF5E7E,#FFC93C);--edge:#C93D5C">
             <span class="start-icon" dir="ltr">${num(3)}×${num(4)}</span>
             <b>${t('startTables')}</b>
             <span>${t('startTablesSub')}</span>
           </button>
-          <button class="start-card pop-in" type="button" id="ch1Btn" style="--bg:linear-gradient(135deg,#7B61FF,#1FB5C9);--edge:#5A43D6;--d:120ms">
-            <img src="img/ch1/hero-ready.png" alt="" draggable="false">
+          <button class="start-card pop-in" type="button" data-chapter="chapter1" style="--bg:linear-gradient(135deg,#7B61FF,#1FB5C9);--edge:#5A43D6;--d:120ms">
+            <img src="${Profile.heroImg('ready')}" alt="" draggable="false">
             <b>${t('startCh1')}</b>
             <span>${t('startCh1Sub')}</span>
           </button>
+          <button class="start-card pop-in" type="button" data-chapter="chapter2" style="--bg:linear-gradient(135deg,#FFB13D,#FF5E7E);--edge:#C93D5C;--d:240ms">
+            <span class="start-icon">⏰</span>
+            <b>${t('startCh2')}</b>
+            <span>${t('startCh2Sub')}</span>
+          </button>
         </div>
+        <div class="center"><button class="link-btn" type="button" id="editProfileBtn">${t('editProfile')}</button></div>
       </section>`;
 
     document.getElementById('tablesBtn').addEventListener('click', () => {
       Sounds.tap();
       go({ name: 'home' });
     });
-    document.getElementById('ch1Btn').addEventListener('click', () => {
+    $app.querySelectorAll('[data-chapter]').forEach((btn) =>
+      btn.addEventListener('click', () => {
+        Sounds.tap();
+        CHAPTERS[btn.dataset.chapter].enter();
+        go({ name: btn.dataset.chapter });
+      })
+    );
+    document.getElementById('editProfileBtn').addEventListener('click', () => {
       Sounds.tap();
-      Chapter1.enter();
-      go({ name: 'chapter1' });
+      go({ name: 'setup' });
+    });
+  }
+
+  // ---------- Setup (character and name) ----------
+
+  function renderSetup() {
+    const draft = screen.draft || (screen.draft = { avatar: Profile.exists ? Profile.avatar : null, name: Profile.rawName });
+    const card = (id, img) => `
+      <button class="avatar-choice pop-in ${draft.avatar === id ? 'selected' : ''}" type="button" data-avatar="${id}" style="--d:${id === 'girl' ? 120 : 0}ms">
+        <img src="${img}" alt="" draggable="false">
+        <b>${t(id)}</b>
+      </button>`;
+
+    $app.innerHTML = `
+      <section class="setup">
+        <h2 class="setup-talk pop-in">${t('setupTalk')}</h2>
+        <div class="card setup-card pop-in">
+          <h3>${t('setupHero')}</h3>
+          <div class="avatar-choices">
+            ${card('boy', 'img/avatar-hello.jpg')}
+            ${card('girl', 'img/girl/avatar-hello.jpg')}
+          </div>
+          <h3>${t('setupName')}</h3>
+          <input class="name-input" id="nameInput" type="text" maxlength="20" autocomplete="off" placeholder="${t('namePlaceholder')}">
+          <div class="center"><button class="big-btn" type="button" id="setupGo">${t('setupGo')}</button></div>
+        </div>
+      </section>`;
+
+    const $name = document.getElementById('nameInput');
+    const $go = document.getElementById('setupGo');
+    $name.value = draft.name;
+    const update = () => {
+      $go.disabled = !(draft.avatar && draft.name.trim());
+    };
+    update();
+
+    $app.querySelectorAll('.avatar-choice').forEach((btn) =>
+      btn.addEventListener('click', () => {
+        Sounds.tap();
+        draft.avatar = btn.dataset.avatar;
+        $app.querySelectorAll('.avatar-choice').forEach((b) => b.classList.toggle('selected', b === btn));
+        const $img = btn.querySelector('img');
+        $img.classList.remove('jump');
+        void $img.offsetWidth;
+        $img.classList.add('jump');
+        update();
+      })
+    );
+    $name.addEventListener('input', () => {
+      draft.name = $name.value;
+      update();
+    });
+    $name.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !$go.disabled) $go.click();
+    });
+    $go.addEventListener('click', () => {
+      Profile.save(draft.name, draft.avatar);
+      preloadAvatar();
+      Sounds.correct();
+      Confetti.burst(80, innerWidth / 2, innerHeight / 2);
+      go({ name: 'start' });
     });
   }
 
@@ -473,7 +587,7 @@
 
     $app.innerHTML = `
       <section class="result card pop-in">
-        <img class="result-avatar" src="img/avatar-${['encourage', 'encourage', 'cheer', 'trophy'][earned]}.jpg" alt="" draggable="false">
+        <img class="result-avatar" src="${Profile.avatarImg(['encourage', 'encourage', 'cheer', 'trophy'][earned])}" alt="" draggable="false">
         <h2>${t('result')[earned]}</h2>
         <p class="score">${t('score', num(quiz.score), num(total))}</p>
         <div class="stars-big">${starsHtml(earned)}</div>

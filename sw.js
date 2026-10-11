@@ -1,5 +1,5 @@
 // Bump the version whenever app files change so phones download the update.
-const CACHE = 'times-tables-v2';
+const CACHE = 'times-tables-v3';
 
 const APP_FILES = [
   './',
@@ -7,9 +7,12 @@ const APP_FILES = [
   'manifest.webmanifest',
   'css/styles.css',
   'css/chapter1.css',
+  'css/chapter2.css',
+  'js/profile.js',
   'js/sounds.js',
   'js/confetti.js',
   'js/chapter1.js',
+  'js/chapter2.js',
   'js/app.js',
   'img/ch1/hero-ready.png',
   'img/ch1/hero-attack.png',
@@ -22,6 +25,15 @@ const APP_FILES = [
   'img/ch1/monster-5.png',
   'img/ch1/monster-6.png',
   'img/ch1/monster-boss.png',
+  'img/girl/avatar-hello.jpg',
+  'img/girl/avatar-think.jpg',
+  'img/girl/avatar-cheer.jpg',
+  'img/girl/avatar-encourage.jpg',
+  'img/girl/avatar-trophy.jpg',
+  'img/girl/hero-ready.png',
+  'img/girl/hero-attack.png',
+  'img/girl/hero-hurt.png',
+  'img/girl/hero-victory.png',
   'img/avatar-hello.jpg',
   'img/avatar-think.jpg',
   'img/avatar-cheer.jpg',
