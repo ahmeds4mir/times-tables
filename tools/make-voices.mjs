@@ -10,8 +10,13 @@ for (const file of ['intros.js', 'mom.js']) {
 }
 const only = process.argv.slice(2);
 
-// Google reads Western digits more reliably than Arabic-Indic ones.
+// Google reads Western digits more reliably than Arabic-Indic ones, and skips math symbols.
 const westernDigits = (s) => s.replace(/[٠-٩]/g, (d) => String(d.charCodeAt(0) - 0x660));
+const SYMBOLS = {
+  ar: { '×': 'في', '=': 'يساوي', '+': 'زائد', '−': 'ناقص' },
+  en: { '×': 'times', '=': 'equals', '+': 'plus', '−': 'minus' },
+};
+const speakSymbols = (s, lang) => s.replace(/[×=+−]/g, (m) => ` ${SYMBOLS[lang][m]} `).replace(/\s+/g, ' ');
 
 const clips = [];
 for (const [key, langs] of Object.entries(window.INTROS)) {
@@ -51,7 +56,7 @@ async function tts(text, lang) {
 
 for (const { key, lang, name, text: raw } of clips) {
   if (only.length && !only.includes(key)) continue;
-  const text = westernDigits(raw.replace(/\p{Extended_Pictographic}|\uFE0F/gu, '').trim());
+  const text = speakSymbols(westernDigits(raw.replace(/\p{Extended_Pictographic}|\uFE0F/gu, '').trim()), lang);
   const buffers = [];
   for (const part of chunks(text)) buffers.push(await tts(part, lang));
   const dir = new URL(`../audio/${lang}/`, import.meta.url);

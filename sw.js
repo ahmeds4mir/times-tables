@@ -1,7 +1,7 @@
 // Bump the version whenever app files change so phones download the update.
-const CACHE = 'times-tables-v5';
+const CACHE = 'times-tables-v6';
 
-const MOM_STEPS = { lastCol: 5, swap: 5, split: 5, zeroOne: 5, ten: 4, unknown: 4 };
+const MOM_STEPS = { lastCol: 6, swap: 5, split: 5, zeroOne: 6, ten: 5, unknown: 4 };
 const VOICES = [
   'tables', 'chapter1', 'chapter2', 'ch3', 'ch4', 'ch5', 'ch6', 'ch7', 'ch8', 'ch9', 'ch10',
   ...Object.entries(MOM_STEPS).flatMap(([lesson, n]) => Array.from({ length: n }, (_, i) => `mom-${lesson}-${i}`)),
