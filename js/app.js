@@ -16,7 +16,12 @@
 
   const STRINGS = {
     ar: {
-      title: 'جدول الضرب 🎈',
+      title: 'مغامرات الرياضيات 🎈',
+      startTalk: 'ماذا نتعلم اليوم؟ 😊',
+      startTables: 'جدول الضرب',
+      startTablesSub: 'راجع والعب 🎮',
+      startCh1: 'الفصل الأول: قواعد الضرب',
+      startCh1Sub: 'مغامرة الوحوش ⚔️',
       pick: 'اختر جدولاً لنبدأ المغامرة!',
       table: 'جدول',
       mixed: 'تحدي الأبطال (كل الجداول)',
@@ -43,7 +48,12 @@
       sound: 'الصوت',
     },
     en: {
-      title: 'Times Tables 🎈',
+      title: 'Math Adventures 🎈',
+      startTalk: 'What shall we learn today? 😊',
+      startTables: 'Times Tables',
+      startTablesSub: 'Review and play 🎮',
+      startCh1: 'Chapter 1: Rules of Multiplication',
+      startCh1Sub: 'Monster adventure ⚔️',
       pick: 'Pick a table to start the adventure!',
       table: 'Table',
       mixed: 'Champion Challenge (all tables)',
@@ -73,7 +83,7 @@
 
   let lang = localStorage.getItem('mt.lang') === 'en' ? 'en' : 'ar';
   let stars = JSON.parse(localStorage.getItem('mt.stars') || '{}');
-  let screen = { name: 'home' };
+  let screen = { name: 'start' };
   let quiz = null;
   let pendingTimer = null;
 
@@ -164,6 +174,7 @@
   function go(next) {
     clearTimeout(pendingTimer);
     if ('speechSynthesis' in window) speechSynthesis.cancel();
+    if (screen.name === 'chapter1') Chapter1.leave();
     screen = next;
     render();
     window.scrollTo({ top: 0 });
@@ -184,15 +195,48 @@
     $soundBtn.textContent = Sounds.enabled ? '🔊' : '🔇';
     setLabel($soundBtn, t('sound'));
     setLabel($homeBtn, t('home'));
-    $homeBtn.classList.toggle('hidden', screen.name === 'home');
+    $homeBtn.classList.toggle('hidden', screen.name === 'start');
   }
 
   function render() {
     renderTopbar();
-    if (screen.name === 'home') renderHome();
+    if (screen.name === 'start') renderStart();
+    else if (screen.name === 'chapter1') Chapter1.render({ root: $app, lang: () => lang, num, starsHtml });
+    else if (screen.name === 'home') renderHome();
     else if (screen.name === 'review') renderReview(screen.table);
     else if (screen.name === 'quiz') renderQuiz();
     else if (screen.name === 'result') renderResult();
+  }
+
+  // ---------- Start ----------
+
+  function renderStart() {
+    $app.innerHTML = `
+      <section class="start">
+        ${mascot('hello', t('startTalk'), 'large')}
+        <div class="start-cards">
+          <button class="start-card pop-in" type="button" id="tablesBtn" style="--bg:linear-gradient(135deg,#FF5E7E,#FFC93C);--edge:#C93D5C">
+            <span class="start-icon" dir="ltr">${num(3)}×${num(4)}</span>
+            <b>${t('startTables')}</b>
+            <span>${t('startTablesSub')}</span>
+          </button>
+          <button class="start-card pop-in" type="button" id="ch1Btn" style="--bg:linear-gradient(135deg,#7B61FF,#1FB5C9);--edge:#5A43D6;--d:120ms">
+            <img src="img/ch1/hero-ready.png" alt="" draggable="false">
+            <b>${t('startCh1')}</b>
+            <span>${t('startCh1Sub')}</span>
+          </button>
+        </div>
+      </section>`;
+
+    document.getElementById('tablesBtn').addEventListener('click', () => {
+      Sounds.tap();
+      go({ name: 'home' });
+    });
+    document.getElementById('ch1Btn').addEventListener('click', () => {
+      Sounds.tap();
+      Chapter1.enter();
+      go({ name: 'chapter1' });
+    });
   }
 
   // ---------- Home ----------
@@ -461,7 +505,7 @@
 
   $homeBtn.addEventListener('click', () => {
     Sounds.tap();
-    go({ name: 'home' });
+    go({ name: 'start' });
   });
 
   $langBtn.addEventListener('click', () => {
