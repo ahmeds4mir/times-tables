@@ -79,12 +79,34 @@ window.Adventure = function (cfg) {
     },
   };
 
-  const LEVELS = cfg.levels.concat([{ mixed: true, icon: '🎲', color: '#7B61FF', gens: cfg.levels.flatMap((l) => l.gens) }]);
+  const LEVELS = cfg.levels.concat([
+    {
+      mixed: true,
+      icon: '🎲',
+      color: '#7B61FF',
+      gens: cfg.levels.flatMap((l) => l.gens),
+      games: cfg.levels.map((l) => l.game).filter(Boolean),
+    },
+  ]);
 
   let ctx = null;
   let timers = [];
   let active = false;
-  const st = { view: 'map', level: 0, qs: [], idx: 0, results: [], locked: false, typed: [], pose: 'ready', hero: 0, rival: 0, voice: false };
+  const st = {
+    view: 'map',
+    level: 0,
+    qs: [],
+    idx: 0,
+    results: [],
+    locked: false,
+    typed: [],
+    pose: 'ready',
+    hero: 0,
+    rival: 0,
+    voice: false,
+    game: 'choice',
+    mg: {},
+  };
 
   const S = () => Profile.strings(STR, ctx.lang());
   const $ = (id) => document.getElementById(id);
@@ -380,6 +402,8 @@ window.Adventure = function (cfg) {
   function startLevel() {
     clearTimers();
     Voice.stop();
+    if (window.MiniGames) MiniGames.destroy();
+    const L = LEVELS[st.level];
     st.qs = buildQuestions();
     st.idx = 0;
     st.results = [];
@@ -387,6 +411,11 @@ window.Adventure = function (cfg) {
     st.pose = 'ready';
     st.hero = 0;
     st.rival = 0;
+    st.mg = {};
+    st.game =
+      L.mixed && L.games && L.games.length
+        ? pick(L.games)
+        : L.game || (cfg.mech.type === 'race' ? 'race' : 'choice');
     show('play');
   }
 
@@ -413,6 +442,10 @@ window.Adventure = function (cfg) {
     st.typed = [];
     st.pose = 'ready';
     st.t0 = performance.now();
+    if (window.MiniGames) MiniGames.destroy();
+
+    const gameId = st.game || L.game || 'choice';
+    const gameLabel = window.MiniGames ? MiniGames.label(gameId, ctx.lang()) : '';
 
     let body;
     if (q.type === 'column') {
@@ -421,15 +454,14 @@ window.Adventure = function (cfg) {
         ${keypadHtml()}`;
     } else {
       const visual = q.visual ? `<div class="card adv-card">${q.visual()}</div>` : '';
-      body = `${visual}<div class="choices adv-choices n${q.choices.length}">${q.choices
-        .map((v, i) => `<button class="choice pop-in" type="button" style="--d:${i * 50}ms" data-i="${i}">${label(q, v)}</button>`)
-        .join('')}</div>`;
+      body = `${visual}<div class="mg-host" id="mgHost"></div>`;
     }
 
     ctx.root.innerHTML = `
-      <section class="adv adv-play mech-${cfg.mech.type}" style="--c:${L.color || cfg.color}">
+      <section class="adv adv-play mech-${cfg.mech.type} theme-${cfg.id}" style="--c:${L.color || cfg.color}">
         <div class="adv-top">
           <span class="adv-chip">${L.icon} ${levelName(st.level)}</span>
+          ${gameLabel && q.type !== 'column' ? `<span class="mg-chip">${gameLabel}</span>` : ''}
           <span class="adv-count">${api.N(st.idx + 1)} / ${api.N(st.qs.length)}</span>
         </div>
         <div class="adv-scene scene-${cfg.mech.bg}" id="advScene">${sceneHtml()}</div>
@@ -439,13 +471,19 @@ window.Adventure = function (cfg) {
 
     if (q.type === 'column') {
       ctx.root.querySelectorAll('.key').forEach((k) => k.addEventListener('click', () => press(k.dataset.k)));
-    } else {
-      ctx.root.querySelectorAll('.choice').forEach((btn) =>
-        btn.addEventListener('click', () => {
-          const v = q.choices[Number(btn.dataset.i)];
+    } else if (window.MiniGames) {
+      const mgApi = {
+        N: api.N,
+        tx: api.tx,
+        label,
+        locked: () => st.locked,
+        mg: st.mg,
+        themeEmoji: cfg.mech.token || cfg.mech.goal || cfg.icon || '⭐',
+        answer(v, btn) {
           resolve(v === q.answer, btn);
-        })
-      );
+        },
+      };
+      MiniGames.mount($('mgHost'), gameId, q, mgApi);
     }
   }
 
@@ -472,9 +510,9 @@ window.Adventure = function (cfg) {
     const q = st.qs[st.idx];
     st.results[st.idx] = correct;
 
-    ctx.root.querySelectorAll('.choice, .key').forEach((b) => (b.disabled = true));
-    ctx.root.querySelectorAll('.choice').forEach((b) => {
-      const v = q.choices[Number(b.dataset.i)];
+    ctx.root.querySelectorAll('.choice, .key, .mg-door, .mg-balloon, .mg-card, .mg-sort-card, .mg-bucket, .mg-box').forEach((b) => (b.disabled = true));
+    ctx.root.querySelectorAll('.choice, .mg-door, .mg-balloon, .mg-sort-card').forEach((b) => {
+      const v = b.dataset.v != null ? Number(b.dataset.v) : q.choices[Number(b.dataset.i)];
       if (v === q.answer) b.classList.add('right');
       else if (b !== btn) b.classList.add('faded');
     });
@@ -527,6 +565,7 @@ window.Adventure = function (cfg) {
   function next() {
     clearTimers();
     UI.closeSheet();
+    if (window.MiniGames) MiniGames.destroy();
     st.idx++;
     st.locked = false;
     if (st.idx >= st.qs.length) finish();

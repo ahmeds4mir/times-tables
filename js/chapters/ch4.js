@@ -151,6 +151,7 @@ window.Chapter4 = (function () {
         },
         example: (api) => api.colHtml(358, 274, '+', { show: true }),
         gens: [addNoCarry, addCarry, addCarry],
+        game: 'door',
       },
       {
         icon: '➖',
@@ -162,6 +163,7 @@ window.Chapter4 = (function () {
         },
         example: (api) => api.colHtml(503, 268, '−', { show: true }),
         gens: [subBorrow, subZero],
+        game: 'connect',
       },
       {
         icon: '🔢',
@@ -173,6 +175,7 @@ window.Chapter4 = (function () {
         },
         example: (api) => api.colHtml(2675, 1348, '+', { show: true }),
         gens: [add4, sub4],
+        game: 'memory',
       },
       {
         icon: '📖',
@@ -184,6 +187,7 @@ window.Chapter4 = (function () {
         },
         example: (api) => `${api.eq([398, '+', 205])}<p class="hint-rule">${api.tx('٤٠٠ + ٢٠٠ = ٦٠٠ تقريباً', 'about 400 + 200 = 600')}</p>`,
         gens: [story, story, estimate],
+        game: 'reveal',
       },
     ],
   });

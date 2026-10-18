@@ -88,6 +88,7 @@ window.Chapter10 = (function () {
         rule: { ar: '٤٠ × ٦ = ٤ عشرات × ٦ = ٢٤ عشرة = ٢٤٠', en: '40 × 6 = 4 tens × 6 = 24 tens = 240' },
         example: (api) => api.eq([40, '×', 6, '=', 240]) + api.eq([400, '×', 6, '=', 2400]),
         gens: [roundTens],
+        game: 'sort',
       },
       {
         icon: '2️⃣',
@@ -96,6 +97,7 @@ window.Chapter10 = (function () {
         rule: { ar: 'نضرب الآحاد ونكتب الآحاد ونحمل العشرات، ثم نضرب العشرات ونضيف ما حملناه.', en: 'Multiply the ones, write the ones and carry the tens. Then multiply the tens and add the carry.' },
         example: (api) => api.colHtml(36, 4, '×', { show: true }),
         gens: [twoNoCarry, twoCarry, twoCarry],
+        game: 'connect',
       },
       {
         icon: '3️⃣',
@@ -104,6 +106,7 @@ window.Chapter10 = (function () {
         rule: { ar: 'نفس الخطوات، ونكمل حتى خانة المئات.', en: 'The same steps, all the way to the hundreds.' },
         example: (api) => api.colHtml(247, 3, '×', { show: true }),
         gens: [three],
+        game: 'memory',
       },
       {
         icon: '📖',
@@ -112,6 +115,7 @@ window.Chapter10 = (function () {
         rule: { ar: '"في كل واحد… كم في الكل؟" ← نضرب.', en: '"Each one has… how many in all?" → multiply.' },
         example: (api) => `<p class="hint-rule">${api.tx('٢٤ قلماً في كل علبة، ٦ علب', '24 pencils in each box, 6 boxes')}</p>${api.colHtml(24, 6, '×', { show: true })}`,
         gens: [story, story, three],
+        game: 'duel',
       },
     ],
   });

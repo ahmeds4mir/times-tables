@@ -30,10 +30,10 @@ window.Chapter2 = (function () {
   // ---------- Levels ----------
 
   const LEVELS = [
-    { color: '#FFB13D', icon: '☀️', readStep: 15, setStep: 15, durs: [15, 30], cross: false },
-    { color: '#1FB5C9', icon: '🌤️', readStep: 5, setStep: 5, durs: [10, 15, 20, 25, 30, 35, 40, 45], cross: true },
-    { color: '#7B61FF', icon: '🌙', readStep: 1, setStep: 5, durs: [15, 20, 25, 35, 40, 45, 50, 70, 80, 90], cross: true },
-    { color: '#FF5E7E', icon: '🏅', olympics: true },
+    { color: '#FFB13D', icon: '☀️', readStep: 15, setStep: 15, durs: [15, 30], cross: false, game: 'door' },
+    { color: '#1FB5C9', icon: '🌤️', readStep: 5, setStep: 5, durs: [10, 15, 20, 25, 30, 35, 40, 45], cross: true, game: 'sort' },
+    { color: '#7B61FF', icon: '🌙', readStep: 1, setStep: 5, durs: [15, 20, 25, 35, 40, 45, 50, 70, 80, 90], cross: true, game: 'pop' },
+    { color: '#FF5E7E', icon: '🏅', olympics: true, game: 'memory' },
   ];
 
   const STOPS = [
@@ -267,7 +267,7 @@ window.Chapter2 = (function () {
   let ctx = null;
   let timers = [];
   let raf = 0;
-  const st = { view: 'map', level: 0, missions: [], idx: 0, results: [], locked: false, clock: 0, lab: LAB_START, sw: null, lang: null, fresh: true };
+  const st = { view: 'map', level: 0, missions: [], idx: 0, results: [], locked: false, clock: 0, lab: LAB_START, sw: null, lang: null, fresh: true, mg: {} };
 
   const S = () => Profile.strings(STR, ctx.lang());
   const N = (n) => ctx.num(n);
@@ -779,12 +779,14 @@ window.Chapter2 = (function () {
 
   function startLevel(level) {
     clearTimers();
+    if (window.MiniGames) MiniGames.destroy();
     st.level = level;
     st.missions = buildMissions(level);
     st.idx = 0;
     st.results = [];
     st.locked = false;
     st.fresh = true;
+    st.mg = {};
     show('play');
   }
 
@@ -808,14 +810,21 @@ window.Chapter2 = (function () {
     const title = stop ? s.stops[stop.key].name : s.levels[st.level].name;
     const emoji = stop ? stop.emoji : OLY_ICON[m.kind];
 
+    const useGame = !isDrag(m) && m.kind !== 'stopwatch' && m.choices && window.MiniGames;
+    const gameId = L.game || 'choice';
+    const gameLabel = useGame ? MiniGames.label(gameId, ctx.lang()) : '';
+
     let controls;
     if (isDrag(m)) controls = `<div class="center"><button class="big-btn" type="button" id="checkBtn">${s.check}</button></div>`;
     else if (m.kind === 'stopwatch') controls = `<div class="center"><button class="big-btn alt" type="button" id="swBtn">${s.start}</button></div>`;
+    else if (useGame) controls = `<div class="mg-host" id="mgHost"></div>`;
     else {
       controls = `<div class="choices c2-choices n${m.choices.length}">${m.choices
         .map((v, i) => `<button class="choice pop-in" type="button" style="--d:${i * 60}ms" data-i="${i}">${choiceLabel(m, v)}</button>`)
         .join('')}</div>`;
     }
+
+    if (window.MiniGames) MiniGames.destroy();
 
     ctx.root.innerHTML = `
       <section class="c2 c2-play" style="--c:${L.color}">
@@ -826,6 +835,7 @@ window.Chapter2 = (function () {
           <span class="scene-emoji">${emoji}</span>
         </div>
         <div class="c2-say" id="say">${promptText(m)}</div>
+        ${gameLabel ? `<div class="center"><span class="mg-chip">${gameLabel}</span></div>` : ''}
         <div class="card c2-mission">${missionBody(m)}</div>
         ${controls}
         <div class="feedback" id="fb"></div>
@@ -842,6 +852,18 @@ window.Chapter2 = (function () {
       $('checkBtn').addEventListener('click', () => resolve(norm(st.clock) === m.answer));
     } else if (m.kind === 'stopwatch') {
       $('swBtn').addEventListener('click', toggleStopwatch);
+    } else if (useGame) {
+      MiniGames.mount($('mgHost'), gameId, m, {
+        N,
+        tx: (ar, en) => (ctx.lang() === 'ar' ? ar : en),
+        label: choiceLabel,
+        locked: () => st.locked,
+        mg: st.mg,
+        themeEmoji: emoji,
+        answer(v, btn) {
+          resolve(v === m.answer, btn);
+        },
+      });
     } else {
       ctx.root.querySelectorAll('.choice').forEach((btn) =>
         btn.addEventListener('click', () => {
@@ -894,9 +916,9 @@ window.Chapter2 = (function () {
     const oly = LEVELS[st.level].olympics;
     st.results[st.idx] = correct;
 
-    ctx.root.querySelectorAll('.choice, .step-btn, #checkBtn').forEach((b) => (b.disabled = true));
-    ctx.root.querySelectorAll('.choice').forEach((b) => {
-      const v = m.choices[Number(b.dataset.i)];
+    ctx.root.querySelectorAll('.choice, .step-btn, #checkBtn, .mg-door, .mg-balloon, .mg-card, .mg-sort-card, .mg-bucket, .mg-box').forEach((b) => (b.disabled = true));
+    ctx.root.querySelectorAll('.choice, .mg-door, .mg-balloon, .mg-sort-card').forEach((b) => {
+      const v = b.dataset.v != null ? Number(b.dataset.v) : m.choices[Number(b.dataset.i)];
       if (v === m.answer) b.classList.add('right');
       else if (b !== btn) b.classList.add('faded');
     });

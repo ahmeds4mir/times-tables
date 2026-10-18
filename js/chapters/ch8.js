@@ -165,6 +165,7 @@ window.Chapter8 = (function () {
         rule: { ar: 'نملأ المجموعات بالتساوي، وما لا يكفي لمجموعة كاملة هو الباقي.', en: 'Fill equal groups. What is not enough for a full group is the remainder.' },
         example: (api) => `${api.groups(4, 3, '🍪', 2)}${api.eq([14, '÷', 3, '=', 4])}<p class="hint-rule">${api.tx('والباقي ٢', 'remainder 2')}</p>`,
         gens: [plates],
+        game: 'sort',
       },
       {
         icon: '➗',
@@ -173,6 +174,7 @@ window.Chapter8 = (function () {
         rule: { ar: 'نبحث في جدول الضرب عن أكبر ناتج لا يزيد عن العدد، ثم نطرح لنعرف الباقي.', en: 'Find the biggest times-table answer not over the number, then subtract to get the remainder.' },
         example: (api) => divHint(api, 23, 4, 5, 3),
         gens: [divide],
+        game: 'door',
       },
       {
         icon: '🔍',
@@ -181,6 +183,7 @@ window.Chapter8 = (function () {
         rule: { ar: 'المقسوم عليه × الناتج + الباقي = العدد الأصلي. والباقي دائماً أصغر من المقسوم عليه.', en: 'divisor × answer + remainder = the starting number. The remainder is always smaller than the divisor.' },
         example: (api) => `${api.eq([4, '×', 5, '+', 3, '=', 23])}`,
         gens: [check, impossible],
+        game: 'pop',
       },
       {
         icon: '🚐',
@@ -189,6 +192,7 @@ window.Chapter8 = (function () {
         rule: { ar: 'نفكر في الباقي: هل يحتاج سيارة أخرى (نزيد ١)، أم لا يكفي لشيء (نتركه)؟', en: 'Think about the remainder: does it need one more van (add 1), or is it not enough (leave it)?' },
         example: (api) => `${api.eq([22, '÷', 4, '=', 5])}<p class="hint-rule">${api.tx('والباقي ٢ ← نحتاج ٦ سيارات 🚐', 'remainder 2 → we need 6 vans 🚐')}</p>`,
         gens: [cars, shop],
+        game: 'lucky',
       },
     ],
   });

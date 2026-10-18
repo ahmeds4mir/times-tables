@@ -125,6 +125,7 @@ window.Chapter7 = (function () {
         rule: { ar: 'نجمع العشرات معاً، ثم الآحاد معاً، ثم نجمع الناتجين.', en: 'Add the tens, add the ones, then put them together.' },
         example: (api) => addHint(api, 37, 25),
         gens: [(api) => add(api, false), (api) => add(api, true)],
+        game: 'race',
       },
       {
         icon: '➖',
@@ -133,6 +134,7 @@ window.Chapter7 = (function () {
         rule: { ar: 'نطرح العشرات أولاً، ثم نطرح الآحاد.', en: 'Take away the tens first, then the ones.' },
         example: (api) => line(api, 'أولاً العشرات', 'Tens first', [72, '−', 30, '=', 42]) + line(api, 'ثم الآحاد', 'Then the ones', [42, '−', 8, '=', 34]),
         gens: [(api) => sub(api, false), (api) => sub(api, true)],
+        game: 'pop',
       },
       {
         icon: '💯',
@@ -141,6 +143,7 @@ window.Chapter7 = (function () {
         rule: { ar: 'نقفز إلى العشرة التالية، ثم بالعشرات حتى ١٠٠.', en: 'Hop to the next ten, then jump by tens to 100.' },
         example: (api) => line(api, 'إلى العشرة التالية', 'To the next ten', [65, '+', 5, '=', 70]) + line(api, 'ثم إلى ١٠٠', 'Then to 100', [70, '+', 30, '=', 100]),
         gens: [to100],
+        game: 'door',
       },
       {
         icon: '🧠',
@@ -152,6 +155,7 @@ window.Chapter7 = (function () {
         },
         example: (api) => line(api, 'أولاً', 'First', [45, '+', 15, '=', 60]) + line(api, 'ثم', 'Then', [60, '+', 38, '=', 98]),
         gens: [tens, smart],
+        game: 'duel',
       },
     ],
   });

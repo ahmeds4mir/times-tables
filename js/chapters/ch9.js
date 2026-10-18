@@ -160,6 +160,7 @@ window.Chapter9 = (function () {
         rule: { ar: 'كل رقم له بيت (خانة)، وقيمته تتغير حسب بيته.', en: 'Every digit lives in a place, and its value depends on that place.' },
         example: (api) => `${chart(api, 473258, 4)}<p class="hint-rule">${api.tx('الرقم ٧ قيمته ٧٠٬٠٠٠', 'The 7 is worth 70,000')}</p>`,
         gens: [valueOf, compose],
+        game: 'reveal',
       },
       {
         icon: '⚖️',
@@ -168,6 +169,7 @@ window.Chapter9 = (function () {
         rule: { ar: 'نقارن الأرقام من اليسار. أول رقم مختلف يحدد العدد الأكبر.', en: 'Compare digits from the left. The first different digit decides.' },
         example: (api) => `<div class="big-num">${api.N(45213)}</div><div class="big-num">${api.N(45876)}</div><p class="hint-rule">${api.tx('٢ أصغر من ٨ في خانة المئات ← العدد الثاني أكبر', '2 is less than 8 in the hundreds → the second is bigger')}</p>`,
         gens: [biggest],
+        game: 'memory',
       },
       {
         icon: '📍',
@@ -176,6 +178,7 @@ window.Chapter9 = (function () {
         rule: { ar: 'نعرف كم تساوي القفزة الواحدة، ثم نعدّ القفزات.', en: 'Find what one jump is worth, then count the jumps.' },
         example: (api) => lineSvg(api, 30000, 1000, 3),
         gens: [numberLine],
+        game: 'door',
       },
       {
         icon: '🪄',
@@ -184,6 +187,7 @@ window.Chapter9 = (function () {
         rule: { ar: '× ١٠ نضع صفراً، × ١٠٠ نضع صفرين، ÷ ١٠ نحذف صفراً.', en: '× 10 add a zero, × 100 add two zeros, ÷ 10 take a zero away.' },
         example: (api) => `${api.eq([34, '×', 10, '=', 340])}${api.eq([34, '×', 100, '=', 3400])}${api.eq([340, '÷', 10, '=', 34])}`,
         gens: [times10, numberLine],
+        game: 'race',
       },
     ],
   });

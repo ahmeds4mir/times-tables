@@ -182,6 +182,7 @@ window.Chapter3 = (function () {
         },
         example: (api) => `${api.groups(3, 4, '🍬')}${api.eq([12, '÷', 3, '=', 4])}`,
         gens: [share, group],
+        game: 'pop',
       },
       {
         icon: '✖️',
@@ -193,6 +194,7 @@ window.Chapter3 = (function () {
         },
         example: (api) => `${api.eq([24, '÷', 6, '=', '?'], api.N(4))}${api.eq([6, '×', 4, '=', 24])}`,
         gens: [fact, family],
+        game: 'sort',
       },
       {
         icon: '✨',
@@ -204,6 +206,7 @@ window.Chapter3 = (function () {
         },
         example: (api) => `${api.eq([7, '÷', 1, '=', 7])}${api.eq([7, '÷', 7, '=', 1])}${api.eq([0, '÷', 7, '=', 0])}`,
         gens: [special, missing],
+        game: 'memory',
       },
       {
         icon: '📖',
@@ -216,6 +219,7 @@ window.Chapter3 = (function () {
         example: (api) =>
           `<p class="hint-rule">${api.tx('٢٠ جنيهاً لـ ٤ أقلام ✏️', '20 pounds for 4 pencils ✏️')}</p>${api.eq([20, '÷', 4, '=', 5])}`,
         gens: [story],
+        game: 'lucky',
       },
     ],
   });

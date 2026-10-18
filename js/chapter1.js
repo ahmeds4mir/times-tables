@@ -98,13 +98,13 @@ window.Chapter1 = (function () {
   }
 
   const LESSONS = [
-    { monster: 'monster-1', color: '#2ECC71', gen: genOneMore, example: { tokens: [3, '×', 5, '=', 3, '×', 4, '+', 3] }, visual: { mode: 'lastCol', rows: 3, cols: 5 } },
-    { monster: 'monster-2', color: '#9B59B6', gen: genSwap, example: { tokens: [3, '×', 5, '=', 5, '×', 3] }, visual: { mode: 'swap', rows: 3, cols: 5 } },
-    { monster: 'monster-3', color: '#FF8A3D', gen: genSplit, example: { tokens: [7, '×', 8, '=', 5, '×', 8, '+', 2, '×', 8] }, visual: { mode: 'split', rows: 7, cols: 8, s: 5 } },
-    { monster: 'monster-4', color: '#1FB5C9', gen: genZeroOne, example: { tokens: [6, '×', 0, '=', 0] }, visual: { mode: 'zero', rows: 6 } },
-    { monster: 'monster-5', color: '#FF5E7E', gen: genTens, example: { tokens: [4, '×', 12, '=', 4, '×', 10, '+', 4, '×', 2] }, visual: { mode: 'ten', rows: 4, cols: 12 } },
-    { monster: 'monster-6', color: '#00B894', gen: genUnknown, example: { tokens: [BOX, '×', 3, '=', 12], fill: 4 }, visual: { mode: 'unknownRows', rows: 4, cols: 3 } },
-    { monster: 'monster-boss', color: '#7B61FF', gen: genBoss, boss: true },
+    { monster: 'monster-1', color: '#2ECC71', gen: genOneMore, example: { tokens: [3, '×', 5, '=', 3, '×', 4, '+', 3] }, visual: { mode: 'lastCol', rows: 3, cols: 5 }, game: 'duel' },
+    { monster: 'monster-2', color: '#9B59B6', gen: genSwap, example: { tokens: [3, '×', 5, '=', 5, '×', 3] }, visual: { mode: 'swap', rows: 3, cols: 5 }, game: 'memory' },
+    { monster: 'monster-3', color: '#FF8A3D', gen: genSplit, example: { tokens: [7, '×', 8, '=', 5, '×', 8, '+', 2, '×', 8] }, visual: { mode: 'split', rows: 7, cols: 8, s: 5 }, game: 'pop' },
+    { monster: 'monster-4', color: '#1FB5C9', gen: genZeroOne, example: { tokens: [6, '×', 0, '=', 0] }, visual: { mode: 'zero', rows: 6 }, game: 'connect' },
+    { monster: 'monster-5', color: '#FF5E7E', gen: genTens, example: { tokens: [4, '×', 12, '=', 4, '×', 10, '+', 4, '×', 2] }, visual: { mode: 'ten', rows: 4, cols: 12 }, game: 'reveal' },
+    { monster: 'monster-6', color: '#00B894', gen: genUnknown, example: { tokens: [BOX, '×', 3, '=', 12], fill: 4 }, visual: { mode: 'unknownRows', rows: 4, cols: 3 }, game: 'lucky' },
+    { monster: 'monster-boss', color: '#7B61FF', gen: genBoss, boss: true, game: 'duel' },
   ];
   const BOSS_INDEX = LESSONS.length - 1;
   const MOM_KEYS = ['lastCol', 'swap', 'split', 'zeroOne', 'ten', 'unknown'];
@@ -220,7 +220,7 @@ window.Chapter1 = (function () {
 
   let ctx = null;
   let timers = [];
-  const st = { view: 'map', lesson: 0, monsterHp: MONSTER_HP, heroHp: HERO_HP, q: null, locked: false, recent: [], talk: null, fresh: true, win: false, lang: null };
+  const st = { view: 'map', lesson: 0, monsterHp: MONSTER_HP, heroHp: HERO_HP, q: null, locked: false, recent: [], talk: null, fresh: true, win: false, lang: null, mg: {} };
 
   const S = () => Profile.strings(STR, ctx.lang());
   const N = (n) => ctx.num(n);
@@ -447,6 +447,7 @@ window.Chapter1 = (function () {
 
   function startBattle() {
     clearTimers();
+    if (window.MiniGames) MiniGames.destroy();
     st.monsterHp = MONSTER_HP;
     st.heroHp = HERO_HP;
     st.recent = [];
@@ -454,6 +455,7 @@ window.Chapter1 = (function () {
     st.locked = false;
     st.talk = pick(S().startTalk);
     st.fresh = true;
+    st.mg = {};
     show('battle');
   }
 
@@ -461,6 +463,9 @@ window.Chapter1 = (function () {
     const s = S();
     const L = LESSONS[st.lesson];
     const q = st.q;
+    const gameId = L.game || 'duel';
+    const gameLabel = window.MiniGames ? MiniGames.label(gameId, ctx.lang()) : '';
+    if (window.MiniGames) MiniGames.destroy();
 
     ctx.root.innerHTML = `
       <section class="ch1 ch1-battle" style="--c:${L.color}">
@@ -479,17 +484,26 @@ window.Chapter1 = (function () {
           </div>
         </div>
         <div class="battle-talk" id="talk">${st.talk}</div>
+        ${gameLabel ? `<div class="center"><span class="mg-chip">${gameLabel}</span></div>` : ''}
         <div class="card ch1-question">${eq(q.tokens)}</div>
-        <div class="choices">
-          ${q.choices.map((v, i) => `<button class="choice pop-in" type="button" style="--d:${i * 60}ms" data-v="${v}">${N(v)}</button>`).join('')}
-        </div>
+        <div class="mg-host" id="mgHost"></div>
         <div class="ask-mom-row">${Mom.button(ctx.lang(), 'askMom')}</div>
       </section>`;
     st.fresh = false;
 
-    ctx.root.querySelectorAll('.choice').forEach((btn) =>
-      btn.addEventListener('click', () => answer(btn, Number(btn.dataset.v)))
-    );
+    if (window.MiniGames) {
+      MiniGames.mount($('mgHost'), gameId, q, {
+        N,
+        tx: (ar, en) => (ctx.lang() === 'ar' ? ar : en),
+        label: (_q, v) => N(v),
+        locked: () => st.locked,
+        mg: st.mg,
+        themeEmoji: '⚔️',
+        answer(v, btn) {
+          submitAnswer(btn, v);
+        },
+      });
+    }
     $('askMom').addEventListener('click', () => {
       if (st.locked) return;
       Sounds.tap();
@@ -497,15 +511,15 @@ window.Chapter1 = (function () {
     });
   }
 
-  function answer(btn, value) {
+  function submitAnswer(btn, value) {
     if (st.locked) return;
     st.locked = true;
     const s = S();
     const q = st.q;
     const correct = value === q.answer;
 
-    ctx.root.querySelectorAll('.choice').forEach((b) => {
-      b.disabled = true;
+    ctx.root.querySelectorAll('.choice, .mg-door, .mg-balloon, .mg-card, .mg-sort-card, .mg-bucket, .mg-box').forEach((b) => (b.disabled = true));
+    ctx.root.querySelectorAll('.choice, .mg-door, .mg-balloon, .mg-sort-card').forEach((b) => {
       const v = Number(b.dataset.v);
       if (v === q.answer) b.classList.add('right');
       else if (b !== btn) b.classList.add('faded');

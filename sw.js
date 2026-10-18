@@ -1,5 +1,5 @@
 // Bump the version whenever app files change so phones download the update.
-const CACHE = 'times-tables-v7';
+const CACHE = 'times-tables-v8';
 
 const MOM_STEPS = { lastCol: 6, swap: 4, split: 5, zeroOne: 6, ten: 5, unknown: 4 };
 const VOICES = [
@@ -15,6 +15,7 @@ const APP_FILES = [
   'css/chapter1.css',
   'css/chapter2.css',
   'css/engine.css',
+  'css/minigames.css',
   'css/mom.css',
   'js/profile.js',
   'js/sounds.js',
@@ -23,6 +24,7 @@ const APP_FILES = [
   'js/voice.js',
   'js/ui.js',
   'js/mom.js',
+  'js/minigames.js',
   'js/chapter1.js',
   'js/chapter2.js',
   'js/engine.js',

@@ -183,6 +183,7 @@ window.Chapter5 = (function () {
         example: (api) =>
           `<div class="unit-row"><span>🐜<b>${short(api, 'cm')}</b></span><span>🦒<b>${short(api, 'm')}</b></span><span>🚗<b>${short(api, 'km')}</b></span></div>`,
         gens: [unit],
+        game: 'sort',
       },
       {
         icon: '📏',
@@ -191,6 +192,7 @@ window.Chapter5 = (function () {
         rule: { ar: 'كل علامة صغيرة = ١ سم، والعلامة الطويلة كل ١٠ سم. ١ م = ١٠٠ سم.', en: 'Each small mark = 1 cm; the long marks are every 10 cm. 1 m = 100 cm.' },
         example: (api) => `${tapeSvg(api, 120, 137)}<p class="hint-rule">${api.tx('١٣٧ سم = ١ م و ٣٧ سم', '137 cm = 1 m 37 cm')}</p>`,
         gens: [tape],
+        game: 'pop',
       },
       {
         icon: '🔄',
@@ -199,6 +201,7 @@ window.Chapter5 = (function () {
         rule: { ar: '١ كم = ١٠٠٠ م • ١ م = ١٠٠ سم', en: '1 km = 1000 m • 1 m = 100 cm' },
         example: (api) => `${api.eq(api.ar ? [2, 'كم', 'و', 300, 'م', '=', 2300, 'م'] : [2, 'km', 300, 'm', '=', 2300, 'm'])}${api.eq(api.ar ? [3, 'م', '=', 300, 'سم'] : [3, 'm', '=', 300, 'cm'])}`,
         gens: [convert, split],
+        game: 'door',
       },
       {
         icon: '🗺️',
@@ -210,6 +213,7 @@ window.Chapter5 = (function () {
         },
         example: (api) => mapSvg(api, 450, 380, 600),
         gens: [route],
+        game: 'connect',
       },
     ],
   });

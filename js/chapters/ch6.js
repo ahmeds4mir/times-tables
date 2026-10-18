@@ -172,6 +172,7 @@ window.Chapter6 = (function () {
         rule: { ar: 'كل ٤ خطوط يقطعها خط خامس مائل = ٥. نعدّ بالخمسات!', en: 'Four lines crossed by a fifth = 5. Count in fives!' },
         example: (api) => `${tallySvg(13)}<p class="hint-rule">${api.tx('٥، ١٠، ثم ٣ ← ١٣', '5, 10, then 3 → 13')}</p>`,
         gens: [tally],
+        game: 'reveal',
       },
       {
         icon: '📋',
@@ -180,6 +181,7 @@ window.Chapter6 = (function () {
         rule: { ar: 'نبحث عن الصف المطلوب ونقرأ العدد بجانبه. ونجمع كل الأعداد لنعرف المجموع.', en: 'Find the row and read its number. Add all the numbers to get the total.' },
         example: (api) => tableHtml(api, SETS[0], [7, 4, 9, 5]),
         gens: [table],
+        game: 'memory',
       },
       {
         icon: '📊',
@@ -188,6 +190,7 @@ window.Chapter6 = (function () {
         rule: { ar: 'نتتبع أعلى العمود إلى الأرقام على الجانب. العمود الأطول هو الأكثر.', en: 'Follow the top of the bar across to the numbers. The tallest bar is the most.' },
         example: (api) => barSvg(api, SETS[1], [6, 3, 8, 5], 1),
         gens: [(api) => graph(api, [1, 2])],
+        game: 'sort',
       },
       {
         icon: '🔟',
@@ -196,6 +199,7 @@ window.Chapter6 = (function () {
         rule: { ar: 'أحياناً كل خط = ٥ أو ١٠. نعدّ الخطوط بالقفز: ١٠، ٢٠، ٣٠…', en: 'Sometimes each line = 5 or 10. Skip-count the lines: 10, 20, 30…' },
         example: (api) => barSvg(api, SETS[2], [40, 20, 70, 50], 10),
         gens: [(api) => graph(api, [5, 10]), (api) => graph(api, [2, 5])],
+        game: 'race',
       },
     ],
   });
