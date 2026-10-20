@@ -100,14 +100,15 @@ window.Vfx = (function () {
       // already played by caller — leave alone
     }
 
-    const ms = style === 'banner' ? 1100 : 950;
+    // Keep overlay up long enough for kids to actually see it (~2s hold).
+    const ms = 2200;
     hideTimer = setTimeout(() => {
       host.classList.remove('on');
       setTimeout(() => {
         if (!host.classList.contains('on')) host.innerHTML = '';
-      }, 200);
+      }, 250);
     }, ms);
   }
 
-  return { burst, styleForGame, STYLES };
+  return { burst, styleForGame, STYLES, duration: 2200 };
 })();

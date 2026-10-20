@@ -1,4 +1,4 @@
-/* Fighting-game style win overlays — always visible, big, and hard to miss */
+/* Fighting-game style win overlays — longer hold so kids can see them */
 
 .vfx-host {
   position: fixed;
@@ -18,27 +18,28 @@
   position: absolute;
   inset: 0;
   background: radial-gradient(circle at var(--vx, 50%) var(--vy, 45%), rgba(255, 255, 255, .95), transparent 58%);
-  animation: vfx-flash .45s ease-out forwards;
+  animation: vfx-flash 1.1s ease-out forwards;
 }
 .vfx-flash.soft {
-  background: radial-gradient(circle at 50% 42%, rgba(255, 230, 140, .7), transparent 62%);
+  background: radial-gradient(circle at 50% 42%, rgba(255, 230, 140, .75), transparent 62%);
 }
 
 .vfx-tint {
   position: absolute;
   inset: 0;
-  background: rgba(123, 97, 255, .22);
-  animation: vfx-tint .7s ease-out forwards;
+  background: rgba(123, 97, 255, .28);
+  animation: vfx-tint 1.8s ease-out forwards;
 }
-.vfx-tint.hot { background: rgba(255, 94, 126, .28); }
-.vfx-tint.cool { background: rgba(34, 211, 238, .25); }
+.vfx-tint.hot { background: rgba(255, 94, 126, .32); }
+.vfx-tint.cool { background: rgba(34, 211, 238, .28); }
 
 @keyframes vfx-flash {
   0% { opacity: 1; }
+  35% { opacity: .7; }
   100% { opacity: 0; }
 }
 @keyframes vfx-tint {
-  0% { opacity: 1; }
+  0%, 55% { opacity: 1; }
   100% { opacity: 0; }
 }
 
@@ -49,22 +50,24 @@
   background:
     repeating-conic-gradient(from 0deg at 50% 50%, transparent 0 7deg, rgba(255, 255, 255, .35) 7deg 8deg);
   mix-blend-mode: screen;
-  animation: vfx-spin .7s linear forwards;
+  animation: vfx-spin 1.6s linear forwards;
   opacity: .85;
 }
 .vfx-speed {
   background:
     linear-gradient(115deg, transparent 30%, rgba(255, 80, 160, .55) 48%, transparent 55%),
     linear-gradient(65deg, transparent 35%, rgba(255, 200, 40, .55) 50%, transparent 60%);
-  animation: vfx-slash .55s ease-out forwards;
+  animation: vfx-slash 1.4s ease-out forwards;
 }
 @keyframes vfx-spin {
-  from { transform: scale(.75) rotate(0); opacity: .9; }
-  to { transform: scale(1.5) rotate(28deg); opacity: 0; }
+  0% { transform: scale(.75) rotate(0); opacity: .9; }
+  55% { transform: scale(1.25) rotate(18deg); opacity: .75; }
+  100% { transform: scale(1.5) rotate(28deg); opacity: 0; }
 }
 @keyframes vfx-slash {
-  from { transform: scaleX(.15); opacity: 1; }
-  to { transform: scaleX(1.3); opacity: 0; }
+  0% { transform: scaleX(.15); opacity: 1; }
+  50% { transform: scaleX(1.1); opacity: .85; }
+  100% { transform: scaleX(1.3); opacity: 0; }
 }
 
 .vfx-spark {
@@ -86,17 +89,17 @@
   background: linear-gradient(#fff, #FFE566, #FF8A3D);
   border-radius: 6px;
   transform-origin: center bottom;
-  animation: vfx-ray .6s ease-out forwards;
+  animation: vfx-ray 1.5s ease-out forwards;
   box-shadow: 0 0 12px #FFCC00;
 }
 .vfx-spark i:nth-child(1) { transform: rotate(0deg); }
-.vfx-spark i:nth-child(2) { transform: rotate(45deg); animation-delay: .02s; }
-.vfx-spark i:nth-child(3) { transform: rotate(90deg); animation-delay: .04s; }
-.vfx-spark i:nth-child(4) { transform: rotate(135deg); animation-delay: .02s; }
+.vfx-spark i:nth-child(2) { transform: rotate(45deg); animation-delay: .03s; }
+.vfx-spark i:nth-child(3) { transform: rotate(90deg); animation-delay: .06s; }
+.vfx-spark i:nth-child(4) { transform: rotate(135deg); animation-delay: .03s; }
 .vfx-spark i:nth-child(5) { transform: rotate(180deg); }
-.vfx-spark i:nth-child(6) { transform: rotate(225deg); animation-delay: .03s; }
+.vfx-spark i:nth-child(6) { transform: rotate(225deg); animation-delay: .05s; }
 .vfx-spark i:nth-child(7) { transform: rotate(270deg); }
-.vfx-spark i:nth-child(8) { transform: rotate(315deg); animation-delay: .04s; }
+.vfx-spark i:nth-child(8) { transform: rotate(315deg); animation-delay: .06s; }
 
 .vfx-plus {
   position: absolute;
@@ -104,19 +107,21 @@
   top: -20px;
   translate: -50% -100%;
   color: #FFCC00;
-  font-size: 2.4rem;
+  font-size: 2.6rem;
   font-weight: 900;
   text-shadow: 0 3px 0 #B45309, 0 0 18px #fff;
-  animation: vfx-pop .75s cubic-bezier(.2, 1.4, .4, 1) forwards;
+  animation: vfx-pop 1.8s cubic-bezier(.2, 1.4, .4, 1) forwards;
 }
 @keyframes vfx-ray {
   0% { height: 12px; opacity: 1; filter: brightness(1.5); }
-  100% { height: 110px; opacity: 0; }
+  40% { height: 100px; opacity: 1; }
+  100% { height: 120px; opacity: 0; }
 }
 @keyframes vfx-pop {
   0% { transform: scale(.3); opacity: 0; }
-  35% { transform: scale(1.35); opacity: 1; }
-  100% { transform: scale(1) translateY(-40px); opacity: 0; }
+  20% { transform: scale(1.35); opacity: 1; }
+  70% { transform: scale(1.1) translateY(-20px); opacity: 1; }
+  100% { transform: scale(1) translateY(-44px); opacity: 0; }
 }
 
 .vfx-banner {
@@ -124,41 +129,42 @@
   left: 50%;
   top: 40%;
   translate: -50% -50%;
-  padding: 14px 36px;
+  padding: 16px 40px;
   border-radius: 14px;
   background: linear-gradient(90deg, #FF5E7E, #FFB13D 55%, #F5B700);
   box-shadow: 0 10px 0 #B45309, 0 0 50px rgba(255, 180, 40, .75);
-  animation: vfx-banner .95s cubic-bezier(.2, 1.4, .4, 1) forwards;
+  /* Pop in → hold long → fade out */
+  animation: vfx-banner 2.1s cubic-bezier(.2, 1.3, .4, 1) forwards;
   z-index: 2;
 }
 .vfx-banner.small {
   top: 58%;
-  padding: 8px 22px;
-  animation-duration: .85s;
+  padding: 10px 24px;
+  animation-duration: 2s;
 }
 .vfx-banner span {
   display: block;
   color: #fff;
-  font-size: clamp(2.2rem, 10vw, 3.2rem);
+  font-size: clamp(2.4rem, 11vw, 3.4rem);
   font-weight: 900;
   letter-spacing: .04em;
   text-shadow: 0 4px 0 rgba(0, 0, 0, .28);
   white-space: nowrap;
 }
-.vfx-banner.small span { font-size: clamp(1.4rem, 6vw, 2rem); }
+.vfx-banner.small span { font-size: clamp(1.5rem, 6.5vw, 2.1rem); }
 @keyframes vfx-banner {
   0% { transform: rotate(-10deg) scale(.35); opacity: 0; }
-  30% { transform: rotate(-8deg) scale(1.2); opacity: 1; }
-  65% { transform: rotate(-8deg) scale(1); opacity: 1; }
-  100% { transform: rotate(-6deg) scale(1.08); opacity: 0; }
+  15% { transform: rotate(-8deg) scale(1.18); opacity: 1; }
+  70% { transform: rotate(-8deg) scale(1); opacity: 1; }
+  100% { transform: rotate(-6deg) scale(1.06); opacity: 0; }
 }
 
 .vfx-aura {
   position: absolute;
   left: var(--vx, 50%);
   top: var(--vy, 45%);
-  width: 220px;
-  height: 220px;
+  width: 240px;
+  height: 240px;
   translate: -50% -50%;
 }
 .vfx-aura .ring {
@@ -167,34 +173,36 @@
   border: 5px solid #5EEAD4;
   border-radius: 50%;
   box-shadow: 0 0 28px #22D3EE, inset 0 0 24px rgba(250, 204, 21, .7);
-  animation: vfx-ring .75s ease-out forwards;
+  animation: vfx-ring 1.8s ease-out forwards;
 }
-.vfx-aura .ring.d2 { inset: 8%; border-color: #FDE047; animation-delay: .07s; }
-.vfx-aura .ring.d3 { inset: -12%; border-color: #A78BFA; animation-delay: .14s; }
+.vfx-aura .ring.d2 { inset: 8%; border-color: #FDE047; animation-delay: .1s; }
+.vfx-aura .ring.d3 { inset: -12%; border-color: #A78BFA; animation-delay: .2s; }
 .vfx-aura .bolt {
   position: absolute;
   inset: 0;
   background:
     radial-gradient(circle, rgba(255, 255, 255, .95) 0 10%, transparent 11%),
     conic-gradient(from 20deg, transparent 0 18%, #67E8F9 20%, transparent 24%, transparent 48%, #FDE047 50%, transparent 54%);
-  animation: vfx-bolt .7s ease-out forwards;
+  animation: vfx-bolt 1.7s ease-out forwards;
   border-radius: 50%;
 }
 @keyframes vfx-ring {
   0% { transform: scale(.25); opacity: 1; }
-  100% { transform: scale(1.65); opacity: 0; }
+  55% { transform: scale(1.2); opacity: .85; }
+  100% { transform: scale(1.7); opacity: 0; }
 }
 @keyframes vfx-bolt {
   0% { transform: scale(.4) rotate(0); opacity: 1; }
-  100% { transform: scale(1.4) rotate(50deg); opacity: 0; }
+  55% { transform: scale(1.15) rotate(30deg); opacity: .9; }
+  100% { transform: scale(1.45) rotate(50deg); opacity: 0; }
 }
 
 .vfx-pow {
   position: absolute;
   left: var(--vx, 50%);
   top: var(--vy, 45%);
-  width: 200px;
-  height: 200px;
+  width: 220px;
+  height: 220px;
   translate: -50% -50%;
 }
 .vfx-pow .burst {
@@ -202,7 +210,7 @@
   inset: 0;
   background: radial-gradient(circle, #FFF7AD 0 28%, #FF6FB5 29% 52%, #FFB13D 53% 70%, transparent 71%);
   clip-path: polygon(50% 0%, 63% 28%, 95% 18%, 78% 45%, 100% 55%, 78% 65%, 92% 90%, 62% 78%, 50% 100%, 38% 78%, 10% 92%, 22% 65%, 0% 55%, 22% 42%, 6% 16%, 37% 28%);
-  animation: vfx-powburst .8s cubic-bezier(.2, 1.4, .4, 1) forwards;
+  animation: vfx-powburst 2s cubic-bezier(.2, 1.3, .4, 1) forwards;
 }
 .vfx-pow b {
   position: absolute;
@@ -210,27 +218,29 @@
   display: grid;
   place-items: center;
   color: #fff;
-  font-size: 2.6rem;
+  font-size: 2.8rem;
   font-weight: 900;
   text-shadow: 0 4px 0 #9D174D;
-  animation: vfx-pop .8s ease-out forwards;
+  animation: vfx-pop 2s ease-out forwards;
 }
 .vfx-stars {
   position: absolute;
   left: 50%;
   top: 52%;
   translate: -50% -50%;
-  font-size: 2rem;
+  font-size: 2.1rem;
   letter-spacing: .4em;
-  animation: vfx-stars .85s ease-out forwards;
+  animation: vfx-stars 2s ease-out forwards;
 }
 @keyframes vfx-powburst {
   0% { transform: scale(.15) rotate(-25deg); opacity: 0; }
-  40% { transform: scale(1.2) rotate(8deg); opacity: 1; }
+  18% { transform: scale(1.2) rotate(8deg); opacity: 1; }
+  70% { transform: scale(1.15) rotate(0); opacity: 1; }
   100% { transform: scale(1.5) rotate(0); opacity: 0; }
 }
 @keyframes vfx-stars {
   0% { transform: scale(.4); opacity: 0; }
-  40% { opacity: 1; }
-  100% { transform: scale(1.5) translateY(-40px); opacity: 0; }
+  20% { opacity: 1; }
+  70% { transform: scale(1.25) translateY(-16px); opacity: 1; }
+  100% { transform: scale(1.5) translateY(-44px); opacity: 0; }
 }

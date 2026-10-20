@@ -951,7 +951,7 @@ window.Chapter2 = (function () {
           Confetti.burst(40, r.left + r.width / 2, r.top + r.height / 2);
         }
       }
-      later(next, 1700);
+      later(next, window.Vfx ? 2300 : 1700);
       return;
     }
 

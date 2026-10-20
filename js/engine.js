@@ -553,7 +553,7 @@ window.Adventure = function (cfg) {
       } else {
         Confetti.burst(40, r.left + r.width / 2, r.top + r.height / 2);
       }
-      later(next, 1400);
+      later(next, window.Vfx ? 2300 : 1400);
       return;
     }
 

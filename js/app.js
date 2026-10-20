@@ -564,7 +564,7 @@
       setMascot('cheer', pick(t('praise')), 'jump');
       $feedback.innerHTML =
         quiz.streak >= 3 ? `<div class="streak-msg bounce">${t('streak', num(quiz.streak))}</div>` : '';
-      pendingTimer = setTimeout(nextQuestion, 1700);
+      pendingTimer = setTimeout(nextQuestion, window.Vfx ? 2300 : 1700);
     } else {
       quiz.streak = 0;
       btn.classList.add('wrong');
