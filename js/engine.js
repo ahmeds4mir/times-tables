@@ -599,6 +599,9 @@ window.Adventure = function (cfg) {
     }
     if (stars >= 1) Sounds.fanfare();
     if (stars >= 2) Confetti.celebrate();
+    if (window.Vfx && stars >= 1) {
+      Vfx.burst({ style: 'banner', lang: ctx.lang(), x: innerWidth / 2, y: innerHeight * 0.4 });
+    }
     show('end');
   }
 

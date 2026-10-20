@@ -5,7 +5,6 @@ window.Vfx = (function () {
     ar: ['يَس!', 'ممتاز!', 'ضربة!', 'برافو!'],
     en: ['YES!', 'NICE!', 'HIT!', 'BRAVO!'],
   };
-  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   let seq = 0;
   let hideTimer = null;
 
@@ -14,7 +13,6 @@ window.Vfx = (function () {
     if (!host) {
       host = document.createElement('div');
       host.id = 'vfxHost';
-      host.className = 'vfx-host';
       host.setAttribute('aria-hidden', 'true');
       document.body.appendChild(host);
     }
@@ -23,7 +21,6 @@ window.Vfx = (function () {
 
   function pickStyle(hint) {
     if (hint && STYLES.includes(hint)) return hint;
-    // Rotate + slight randomness so consecutive wins feel mixed.
     seq = (seq + 1) % STYLES.length;
     return Math.random() < 0.35 ? STYLES[Math.floor(Math.random() * STYLES.length)] : STYLES[seq];
   }
@@ -39,36 +36,34 @@ window.Vfx = (function () {
       sort: 'aura',
       duel: 'spark',
       race: 'banner',
-      choice: null,
+      choice: 'banner',
     };
     return map[gameId] || null;
   }
 
   function burst(opts = {}) {
-    if (reduceMotion.matches) {
-      if (window.Confetti) Confetti.burst(30, opts.x ?? innerWidth / 2, opts.y ?? innerHeight * 0.55);
-      return;
-    }
     const host = ensureHost();
     clearTimeout(hideTimer);
     host.className = 'vfx-host';
     host.innerHTML = '';
+    // Force a reflow so CSS animations always restart.
+    void host.offsetWidth;
 
     const lang = opts.lang === 'ar' ? 'ar' : 'en';
     const style = pickStyle(opts.style || styleForGame(opts.game));
     const x = opts.x != null ? opts.x : innerWidth / 2;
-    const y = opts.y != null ? opts.y : innerHeight * 0.5;
-    const words = BANNER[lang];
-    const word = words[Math.floor(Math.random() * words.length)];
+    const y = opts.y != null ? opts.y : innerHeight * 0.48;
+    const word = BANNER[lang][Math.floor(Math.random() * BANNER[lang].length)];
 
+    host.style.setProperty('--vx', `${Math.round(x)}px`);
+    host.style.setProperty('--vy', `${Math.round(y)}px`);
     host.classList.add('on', `vfx-${style}`);
-    host.style.setProperty('--vx', `${x}px`);
-    host.style.setProperty('--vy', `${y}px`);
 
     if (style === 'spark') {
       host.innerHTML = `
         <div class="vfx-flash"></div>
-        <div class="vfx-spark" style="left:var(--vx);top:var(--vy)">
+        <div class="vfx-tint"></div>
+        <div class="vfx-spark">
           <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
           <b class="vfx-plus">+1</b>
         </div>
@@ -76,31 +71,41 @@ window.Vfx = (function () {
     } else if (style === 'banner') {
       host.innerHTML = `
         <div class="vfx-flash soft"></div>
+        <div class="vfx-tint hot"></div>
         <div class="vfx-speed"></div>
         <div class="vfx-banner"><span>${word}</span></div>`;
     } else if (style === 'aura') {
       host.innerHTML = `
-        <div class="vfx-aura" style="left:var(--vx);top:var(--vy)">
+        <div class="vfx-flash soft"></div>
+        <div class="vfx-tint cool"></div>
+        <div class="vfx-aura">
           <span class="ring"></span><span class="ring d2"></span><span class="ring d3"></span>
           <span class="bolt"></span>
-        </div>`;
+        </div>
+        <div class="vfx-banner small"><span>${word}</span></div>`;
     } else {
       host.innerHTML = `
         <div class="vfx-flash soft"></div>
-        <div class="vfx-pow" style="left:var(--vx);top:var(--vy)">
+        <div class="vfx-tint hot"></div>
+        <div class="vfx-pow">
           <span class="burst"></span>
           <b>POW</b>
         </div>
-        <div class="vfx-stars">⭐✨🌟💫</div>`;
+        <div class="vfx-stars">⭐✨🌟💫⭐</div>`;
     }
 
-    // Keep a light confetti sprinkle with every style.
-    if (window.Confetti) Confetti.burst(style === 'pow' ? 55 : 36, x, y);
+    if (window.Confetti) Confetti.burst(style === 'pow' ? 70 : 50, x, y);
+    if (window.Sounds && Sounds.correct) {
+      // already played by caller — leave alone
+    }
 
+    const ms = style === 'banner' ? 1100 : 950;
     hideTimer = setTimeout(() => {
       host.classList.remove('on');
-      host.innerHTML = '';
-    }, style === 'banner' ? 700 : 560);
+      setTimeout(() => {
+        if (!host.classList.contains('on')) host.innerHTML = '';
+      }, 200);
+    }, ms);
   }
 
   return { burst, styleForGame, STYLES };
