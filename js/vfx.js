@@ -61,21 +61,25 @@ window.Vfx = (function () {
     host.classList.add('on', `mode-${style}`);
 
     if (style === 'spark') {
+      // Concept 1: yellow hit spark + big +1
       host.innerHTML = `
         <div class="vfx-flash"></div>
-        <div class="vfx-tint"></div>
+        <div class="vfx-tint hot"></div>
+        <div class="vfx-lines"></div>
         <div class="vfx-spark">
           <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+          <span class="vfx-starburst"></span>
           <b class="vfx-plus">+1</b>
-        </div>
-        <div class="vfx-lines"></div>`;
+        </div>`;
     } else if (style === 'banner') {
+      // Concept 2: big YES / HIT fighting-game banner
       host.innerHTML = `
         <div class="vfx-flash soft"></div>
         <div class="vfx-tint hot"></div>
         <div class="vfx-speed"></div>
-        <div class="vfx-banner"><span>${word}</span></div>`;
+        <div class="vfx-banner"><span>${word === 'HIT!' || word === 'ضربة!' ? 'YES!' : word}</span></div>`;
     } else if (style === 'aura') {
+      // Concept 3: power-up aura rings
       host.innerHTML = `
         <div class="vfx-flash soft"></div>
         <div class="vfx-tint cool"></div>
@@ -83,8 +87,9 @@ window.Vfx = (function () {
           <span class="ring"></span><span class="ring d2"></span><span class="ring d3"></span>
           <span class="bolt"></span>
         </div>
-        <div class="vfx-banner small"><span>${word}</span></div>`;
+        <div class="vfx-banner small"><span>${lang === 'ar' ? 'قوة!' : 'POWER!'}</span></div>`;
     } else {
+      // Concept 4: comic POW burst
       host.innerHTML = `
         <div class="vfx-flash soft"></div>
         <div class="vfx-tint hot"></div>
@@ -92,6 +97,7 @@ window.Vfx = (function () {
           <span class="burst"></span>
           <b>POW</b>
         </div>
+        <div class="vfx-bam">BAM!</div>
         <div class="vfx-stars">⭐✨🌟💫⭐</div>`;
     }
 

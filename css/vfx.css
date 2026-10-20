@@ -101,16 +101,41 @@
 .vfx-spark i:nth-child(7) { transform: rotate(270deg); }
 .vfx-spark i:nth-child(8) { transform: rotate(315deg); animation-delay: .06s; }
 
-.vfx-plus {
+.vfx-starburst {
   position: absolute;
   left: 0;
-  top: -20px;
-  translate: -50% -100%;
+  top: 0;
+  width: 160px;
+  height: 160px;
+  translate: -50% -50%;
+  background: radial-gradient(circle, #FFF7AD 0 18%, #FFCC00 19% 34%, transparent 35%);
+  clip-path: polygon(50% 0%, 61% 30%, 98% 20%, 72% 48%, 100% 60%, 72% 68%, 92% 98%, 58% 78%, 50% 100%, 42% 78%, 10% 98%, 28% 68%, 0% 58%, 28% 45%, 4% 18%, 40% 30%);
+  animation: vfx-powburst 2s ease-out forwards;
+}
+.vfx-plus {
+  position: absolute;
+  left: 36px;
+  top: -36px;
+  translate: 0 -100%;
   color: #FFCC00;
-  font-size: 2.6rem;
+  font-size: 3.2rem;
   font-weight: 900;
-  text-shadow: 0 3px 0 #B45309, 0 0 18px #fff;
+  text-shadow: 0 4px 0 #B45309, 0 0 22px #fff, 2px 2px 0 #7C2D12;
   animation: vfx-pop 1.8s cubic-bezier(.2, 1.4, .4, 1) forwards;
+}
+.vfx-bam {
+  position: absolute;
+  left: calc(var(--vx, 50%) + 70px);
+  top: calc(var(--vy, 45%) + 40px);
+  translate: -50% -50%;
+  padding: 6px 12px;
+  border-radius: 10px;
+  background: #38BDF8;
+  color: #fff;
+  font-size: 1.4rem;
+  font-weight: 900;
+  box-shadow: 0 4px 0 #0369A1;
+  animation: vfx-pop 2s ease-out forwards;
 }
 @keyframes vfx-ray {
   0% { height: 12px; opacity: 1; filter: brightness(1.5); }

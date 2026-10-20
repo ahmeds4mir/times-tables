@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VFX Compare — Concept vs App</title>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/vfx.css">
+  <style>
+    :root { --ink: #2B2D42; --bg: #F7F4FF; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Baloo Bhaijaan 2", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      padding: 16px 16px 40px;
+    }
+    h1 { margin: 0 0 6px; font-size: 1.55rem; }
+    .sub { margin: 0 0 18px; opacity: .75; line-height: 1.35; }
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
+      background: #fff;
+      border-radius: 18px;
+      padding: 12px;
+      box-shadow: 0 8px 24px rgba(80, 60, 140, .08);
+    }
+    .col h2 {
+      margin: 0 0 8px;
+      font-size: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+    .tag {
+      font-size: .72rem;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #EEE7FF;
+      color: #5B21B6;
+      white-space: nowrap;
+    }
+    .tag.app { background: #DCFCE7; color: #166534; }
+    .frame {
+      position: relative;
+      border-radius: 14px;
+      overflow: hidden;
+      background: #1a1a2e;
+      aspect-ratio: 9 / 16;
+      max-height: 380px;
+      margin: 0 auto;
+      width: min(100%, 220px);
+      border: 3px solid #E2DCF7;
+    }
+    .frame img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .stage {
+      width: 100%;
+      height: 100%;
+      background:
+        radial-gradient(circle at 20% 20%, #FFE8A3 0, transparent 40%),
+        radial-gradient(circle at 80% 30%, #FFC1E3 0, transparent 40%),
+        radial-gradient(circle at 50% 80%, #C7F9E5 0, transparent 45%),
+        #FFF8F0;
+      display: grid;
+      place-items: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .stage .fake-ui {
+      text-align: center;
+      z-index: 1;
+      opacity: .5;
+      pointer-events: none;
+    }
+    .stage .fake-ui b { font-size: 1.25rem; }
+    /* Local VFX layer clipped inside the phone frame */
+    .stage .local-vfx {
+      position: absolute;
+      inset: 0;
+      z-index: 5;
+      pointer-events: none;
+      opacity: 0;
+      visibility: hidden;
+    }
+    .stage .local-vfx.on {
+      opacity: 1;
+      visibility: visible;
+    }
+    .stage .local-vfx .vfx-banner { top: 42%; }
+    .stage .local-vfx .vfx-spark,
+    .stage .local-vfx .vfx-aura,
+    .stage .local-vfx .vfx-pow {
+      left: 50%;
+      top: 45%;
+    }
+    .stage .local-vfx .vfx-bam {
+      left: 72%;
+      top: 58%;
+    }
+    .play {
+      margin-top: 8px;
+      width: 100%;
+      border: 0;
+      border-radius: 12px;
+      padding: 10px;
+      font: inherit;
+      font-weight: 800;
+      color: #fff;
+      background: linear-gradient(90deg, #7B61FF, #FF5E7E);
+      cursor: pointer;
+    }
+    .all {
+      display: block;
+      width: 100%;
+      max-width: 480px;
+      margin: 0 auto 18px;
+      border: 0;
+      border-radius: 14px;
+      padding: 12px;
+      font: inherit;
+      font-weight: 800;
+      color: #fff;
+      background: linear-gradient(90deg, #FF8A3D, #7B61FF);
+      cursor: pointer;
+    }
+    @media (max-width: 700px) {
+      .row { grid-template-columns: 1fr; }
+      .frame { max-height: 340px; }
+    }
+  </style>
+</head>
+<body>
+  <h1>VFX: Concept images vs App</h1>
+  <p class="sub">Left = the 4 concept images. Right = the real app VFX (same CSS/JS), played inside the frame so you can compare side by side.</p>
+  <button class="all" id="playAll" type="button">▶ Play all 4 app effects (one after another)</button>
+
+  <section class="row">
+    <div class="col">
+      <h2>1. Hit Spark <span class="tag">Concept</span></h2>
+      <div class="frame"><img src="img/vfx-ideas/1-hit-spark.jpg" alt="Hit spark concept"></div>
+    </div>
+    <div class="col">
+      <h2>1. Hit Spark <span class="tag app">In app</span></h2>
+      <div class="frame">
+        <div class="stage" data-style="spark">
+          <div class="fake-ui"><div>2 × 4 = ?</div><b>Correct!</b></div>
+          <div class="local-vfx"></div>
+        </div>
+      </div>
+      <button class="play" type="button" data-style="spark">▶ Replay Hit Spark</button>
+    </div>
+  </section>
+
+  <section class="row">
+    <div class="col">
+      <h2>2. YES! Banner <span class="tag">Concept</span></h2>
+      <div class="frame"><img src="img/vfx-ideas/2-yes-banner.jpg" alt="YES banner concept"></div>
+    </div>
+    <div class="col">
+      <h2>2. YES! Banner <span class="tag app">In app</span></h2>
+      <div class="frame">
+        <div class="stage" data-style="banner">
+          <div class="fake-ui"><div>3 × 5 = ?</div><b>Correct!</b></div>
+          <div class="local-vfx"></div>
+        </div>
+      </div>
+      <button class="play" type="button" data-style="banner">▶ Replay YES Banner</button>
+    </div>
+  </section>
+
+  <section class="row">
+    <div class="col">
+      <h2>3. Power Aura <span class="tag">Concept</span></h2>
+      <div class="frame"><img src="img/vfx-ideas/3-power-aura.jpg" alt="Power aura concept"></div>
+    </div>
+    <div class="col">
+      <h2>3. Power Aura <span class="tag app">In app</span></h2>
+      <div class="frame">
+        <div class="stage" data-style="aura">
+          <div class="fake-ui"><div>7 × 6 = ?</div><b>Correct!</b></div>
+          <div class="local-vfx"></div>
+        </div>
+      </div>
+      <button class="play" type="button" data-style="aura">▶ Replay Power Aura</button>
+    </div>
+  </section>
+
+  <section class="row">
+    <div class="col">
+      <h2>4. Comic POW <span class="tag">Concept</span></h2>
+      <div class="frame"><img src="img/vfx-ideas/4-comic-pow.jpg" alt="Comic POW concept"></div>
+    </div>
+    <div class="col">
+      <h2>4. Comic POW <span class="tag app">In app</span></h2>
+      <div class="frame">
+        <div class="stage" data-style="pow">
+          <div class="fake-ui"><div>7 + 6 = ?</div><b>Correct!</b></div>
+          <div class="local-vfx"></div>
+        </div>
+      </div>
+      <button class="play" type="button" data-style="pow">▶ Replay Comic POW</button>
+    </div>
+  </section>
+
+  <script>
+    const HTML = {
+      spark: `
+        <div class="vfx-flash"></div>
+        <div class="vfx-tint hot"></div>
+        <div class="vfx-lines"></div>
+        <div class="vfx-spark">
+          <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+          <span class="vfx-starburst"></span>
+          <b class="vfx-plus">+1</b>
+        </div>`,
+      banner: `
+        <div class="vfx-flash soft"></div>
+        <div class="vfx-tint hot"></div>
+        <div class="vfx-speed"></div>
+        <div class="vfx-banner"><span>YES!</span></div>`,
+      aura: `
+        <div class="vfx-flash soft"></div>
+        <div class="vfx-tint cool"></div>
+        <div class="vfx-aura">
+          <span class="ring"></span><span class="ring d2"></span><span class="ring d3"></span>
+          <span class="bolt"></span>
+        </div>
+        <div class="vfx-banner small"><span>POWER!</span></div>`,
+      pow: `
+        <div class="vfx-flash soft"></div>
+        <div class="vfx-tint hot"></div>
+        <div class="vfx-pow">
+          <span class="burst"></span>
+          <b>POW</b>
+        </div>
+        <div class="vfx-bam">BAM!</div>
+        <div class="vfx-stars">⭐✨🌟💫⭐</div>`,
+    };
+
+    function play(style, holdMs = 2200) {
+      const stage = document.querySelector(`.stage[data-style="${style}"]`);
+      const layer = stage.querySelector('.local-vfx');
+      layer.className = 'local-vfx';
+      layer.innerHTML = '';
+      void layer.offsetWidth;
+      layer.style.setProperty('--vx', '50%');
+      layer.style.setProperty('--vy', '45%');
+      layer.innerHTML = HTML[style];
+      layer.classList.add('on', 'mode-' + style);
+      clearTimeout(layer._t);
+      layer._t = setTimeout(() => {
+        layer.classList.remove('on');
+        layer.innerHTML = '';
+      }, holdMs);
+    }
+
+    document.querySelectorAll('.play').forEach((btn) => {
+      btn.addEventListener('click', () => play(btn.dataset.style));
+    });
+
+    document.getElementById('playAll').addEventListener('click', async () => {
+      for (const s of ['spark', 'banner', 'aura', 'pow']) {
+        document.querySelector(`.stage[data-style="${s}"]`).scrollIntoView({ block: 'center', behavior: 'smooth' });
+        play(s, 2300);
+        await new Promise((r) => setTimeout(r, 2400));
+      }
+    });
+
+    // Auto-start: show spark then banner so the page isn't empty
+    setTimeout(() => play('spark', 2500), 400);
+    setTimeout(() => {
+      document.querySelector('.stage[data-style="banner"]').closest('.row').scrollIntoView({ block: 'center' });
+      play('banner', 2500);
+    }, 3000);
+  </script>
+</body>
+</html>
