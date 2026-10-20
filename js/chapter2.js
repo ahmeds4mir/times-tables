@@ -938,6 +938,19 @@ window.Chapter2 = (function () {
       $('c2HeroBox').classList.add('jump');
       $say.innerHTML = `${pick(oly ? s.olyPraise : s.praise)}${extra ? `<br><small>${extra}</small>` : ''}`;
       if (isDrag(m)) $('dragClock').classList.add('correct');
+      {
+        const r = (btn || $('c2HeroBox')).getBoundingClientRect();
+        if (window.Vfx) {
+          Vfx.burst({
+            x: r.left + r.width / 2,
+            y: r.top + r.height / 2,
+            lang: ctx.lang(),
+            game: LEVELS[st.level].game || 'choice',
+          });
+        } else {
+          Confetti.burst(40, r.left + r.width / 2, r.top + r.height / 2);
+        }
+      }
       later(next, 1700);
       return;
     }

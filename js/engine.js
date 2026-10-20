@@ -542,7 +542,16 @@ window.Adventure = function (cfg) {
       }
       $say.innerHTML = `${pick(s.praise)}${turbo ? ` <small>${s.turbo}</small>` : ''}`;
       const r = (btn || $say).getBoundingClientRect();
-      Confetti.burst(40, r.left + r.width / 2, r.top + r.height / 2);
+      if (window.Vfx) {
+        Vfx.burst({
+          x: r.left + r.width / 2,
+          y: r.top + r.height / 2,
+          lang: ctx.lang(),
+          game: st.game,
+        });
+      } else {
+        Confetti.burst(40, r.left + r.width / 2, r.top + r.height / 2);
+      }
       later(next, 1400);
       return;
     }

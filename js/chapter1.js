@@ -542,6 +542,18 @@ window.Chapter1 = (function () {
       $heroImg.src = img('hero-attack');
       $heroImg.dataset.face = 'left';
       animate($heroWrap, 'lunge');
+      {
+        const r = (btn || $heroWrap).getBoundingClientRect();
+        if (window.Vfx) {
+          Vfx.burst({
+            x: r.left + r.width / 2,
+            y: r.top + r.height / 2,
+            lang: ctx.lang(),
+            game: LESSONS[st.lesson].game || 'duel',
+            style: 'spark',
+          });
+        }
+      }
       later(() => Sounds.slash(), 120);
       later(() => {
         Sounds.hit();

@@ -556,7 +556,11 @@
       quiz.streak++;
       Sounds.correct();
       const r = btn.getBoundingClientRect();
-      Confetti.burst(60, r.left + r.width / 2, r.top + r.height / 2);
+      if (window.Vfx) {
+        Vfx.burst({ x: r.left + r.width / 2, y: r.top + r.height / 2, lang, game: 'choice' });
+      } else {
+        Confetti.burst(60, r.left + r.width / 2, r.top + r.height / 2);
+      }
       setMascot('cheer', pick(t('praise')), 'jump');
       $feedback.innerHTML =
         quiz.streak >= 3 ? `<div class="streak-msg bounce">${t('streak', num(quiz.streak))}</div>` : '';
