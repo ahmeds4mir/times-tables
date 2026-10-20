@@ -512,7 +512,8 @@ window.Adventure = function (cfg) {
 
     ctx.root.querySelectorAll('.choice, .key, .mg-door, .mg-balloon, .mg-card, .mg-sort-card, .mg-bucket, .mg-box').forEach((b) => (b.disabled = true));
     ctx.root.querySelectorAll('.choice, .mg-door, .mg-balloon, .mg-sort-card').forEach((b) => {
-      const v = b.dataset.v != null ? Number(b.dataset.v) : q.choices[Number(b.dataset.i)];
+      const raw = b.dataset.v != null ? b.dataset.v : q.choices[Number(b.dataset.i)];
+      const v = window.MiniGames ? MiniGames.parseVal(raw) : Number(raw);
       if (v === q.answer) b.classList.add('right');
       else if (b !== btn) b.classList.add('faded');
     });

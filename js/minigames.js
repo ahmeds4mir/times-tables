@@ -27,6 +27,15 @@ window.MiniGames = (function () {
     return a;
   }
 
+  // Keep string answers like "cm" / "m" — Number("cm") is NaN and was marking correct picks wrong.
+  function parseVal(raw) {
+    if (typeof raw === 'number') return raw;
+    if (raw == null) return raw;
+    const s = String(raw);
+    if (s.trim() !== '' && Number.isFinite(Number(s))) return Number(s);
+    return s;
+  }
+
   function chip() {
     return '';
   }
@@ -46,7 +55,7 @@ window.MiniGames = (function () {
       btn.addEventListener('click', () => {
         if (api.locked()) return;
         Sounds.tap();
-        api.answer(Number(btn.dataset.v), btn);
+        api.answer(parseVal(btn.dataset.v), btn);
       })
     );
   }
@@ -76,7 +85,7 @@ window.MiniGames = (function () {
       b.addEventListener('click', () => {
         if (api.locked()) return;
         Sounds.tap();
-        const val = Number(b.dataset.v);
+        const val = parseVal(b.dataset.v);
         if (val !== q.answer) {
           b.classList.remove('shake');
           void b.offsetWidth;
@@ -112,7 +121,7 @@ window.MiniGames = (function () {
       btn.addEventListener('click', () => {
         if (api.locked()) return;
         Sounds.tap();
-        const v = Number(btn.dataset.v);
+        const v = parseVal(btn.dataset.v);
         btn.classList.add(v === q.answer ? 'open' : 'trap');
         btn.querySelector('b').textContent = api.label(q, v);
         api.answer(v, btn);
@@ -140,7 +149,7 @@ window.MiniGames = (function () {
         if (api.locked() || busy || btn.classList.contains('matched') || !btn.classList.contains('back')) return;
         Sounds.tap();
         btn.classList.remove('back');
-        btn.querySelector('.face').textContent = api.label(q, Number(btn.dataset.v));
+        btn.querySelector('.face').textContent = api.label(q, parseVal(btn.dataset.v));
         open.push(btn);
         if (open.length < 2) return;
         busy = true;
@@ -149,7 +158,7 @@ window.MiniGames = (function () {
         if (a.dataset.v === b.dataset.v) {
           a.classList.add('matched');
           b.classList.add('matched');
-          if (Number(a.dataset.v) === q.answer) {
+          if (parseVal(a.dataset.v) === q.answer) {
             a.classList.add('win');
             b.classList.add('win');
             api.answer(q.answer, a);
@@ -189,7 +198,7 @@ window.MiniGames = (function () {
       btn.addEventListener('click', () => {
         if (api.locked()) return;
         Sounds.tap();
-        const v = Number(btn.dataset.v);
+        const v = parseVal(btn.dataset.v);
         const col = Math.floor(Math.random() * cols);
         if (v === q.answer) {
           if (grid[col].length < rows) grid[col].push(1);
@@ -211,7 +220,7 @@ window.MiniGames = (function () {
       btn.addEventListener('click', () => {
         if (api.locked()) return;
         Sounds.tap();
-        const v = Number(btn.dataset.v);
+        const v = parseVal(btn.dataset.v);
         if (v === q.answer) api.mg.reveal = Math.min(9, (api.mg.reveal || 0) + 2);
         api.answer(v, btn);
       })
@@ -264,7 +273,7 @@ window.MiniGames = (function () {
       btn.addEventListener('click', () => {
         if (api.locked()) return;
         Sounds.tap();
-        selected = Number(btn.dataset.v);
+        selected = parseVal(btn.dataset.v);
         host.querySelectorAll('.mg-sort-card').forEach((b) => b.classList.toggle('on', b === btn));
       })
     );
@@ -281,7 +290,7 @@ window.MiniGames = (function () {
           // correctly discarded a wrong answer — pick again
           Sounds.correct();
           host.querySelectorAll('.mg-sort-card').forEach((b) => {
-            if (Number(b.dataset.v) === selected) {
+            if (parseVal(b.dataset.v) === selected) {
               b.disabled = true;
               b.style.opacity = '.35';
               b.classList.remove('on');
@@ -289,7 +298,8 @@ window.MiniGames = (function () {
           });
           selected = null;
         } else {
-          api.answer(yes ? selected : q.answer + 999, btn);
+          // Wrong bucket: force a non-matching value (works for string answers too).
+          api.answer(yes ? selected : `\0${String(q.answer)}`, btn);
         }
       })
     );
@@ -310,7 +320,7 @@ window.MiniGames = (function () {
       btn.addEventListener('click', () => {
         if (api.locked()) return;
         Sounds.tap();
-        const v = Number(btn.dataset.v);
+        const v = parseVal(btn.dataset.v);
         if (v === q.answer) d.rival = Math.max(0, d.rival - 1);
         else d.hero = Math.max(0, d.hero - 1);
         api.answer(v, btn);
@@ -357,5 +367,5 @@ window.MiniGames = (function () {
     return `${L.emoji} ${lang === 'ar' ? L.ar : L.en}`;
   }
 
-  return { mount, destroy, label, LABELS, ids: Object.keys(GAMES) };
+  return { mount, destroy, label, parseVal, LABELS, ids: Object.keys(GAMES) };
 })();
