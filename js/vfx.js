@@ -57,7 +57,8 @@ window.Vfx = (function () {
 
     host.style.setProperty('--vx', `${Math.round(x)}px`);
     host.style.setProperty('--vy', `${Math.round(y)}px`);
-    host.classList.add('on', `vfx-${style}`);
+    // Use mode-* on the host — never reuse .vfx-banner/.vfx-spark/etc (those animate to opacity 0).
+    host.classList.add('on', `mode-${style}`);
 
     if (style === 'spark') {
       host.innerHTML = `

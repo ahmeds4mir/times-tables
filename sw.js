@@ -1,5 +1,5 @@
 // Bump the version whenever app files change so phones download the update.
-const CACHE = 'times-tables-v11';
+const CACHE = 'times-tables-v12';
 
 const MOM_STEPS = { lastCol: 6, swap: 4, split: 5, zeroOne: 6, ten: 5, unknown: 4 };
 const VOICES = [
