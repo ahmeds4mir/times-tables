@@ -85,7 +85,7 @@
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  width: clamp(72px, 22vw, 96px);
+  width: clamp(84px, 26vw, 110px);
   padding: 8px 6px 10px;
   border: 3px solid #C4B5FD;
   border-radius: 12px 12px 6px 6px;
@@ -93,11 +93,21 @@
   font-weight: 800;
   transition: transform .2s;
 }
-.mg-door span { font-size: 2rem; line-height: 1; }
-.mg-door b { font-size: 1.1rem; color: #5B21B6; }
+.mg-door span { font-size: 1.5rem; line-height: 1; }
+.mg-door small { font-size: .7rem; font-weight: 700; color: #7C3AED; opacity: .8; }
+.mg-door b {
+  font-size: clamp(1.15rem, 4.5vw, 1.45rem);
+  color: #4C1D95;
+  line-height: 1.15;
+  direction: ltr;
+  unicode-bidi: isolate;
+  min-height: 1.3em;
+}
 .mg-door:active { transform: scale(.95); }
-.mg-door.open { background: #D1FAE5; border-color: #34D399; }
+.mg-door.open,
+.mg-door.right { background: #D1FAE5; border-color: #34D399; }
 .mg-door.trap { background: #FEE2E2; border-color: #F87171; }
+.mg-door.faded { opacity: .45; }
 
 /* ---- memory ---- */
 .mg-memory {

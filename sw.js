@@ -1,5 +1,5 @@
 // Bump the version whenever app files change so phones download the update.
-const CACHE = 'times-tables-v13';
+const CACHE = 'times-tables-v21';
 
 const MOM_STEPS = { lastCol: 6, swap: 4, split: 5, zeroOne: 6, ten: 5, unknown: 4 };
 const VOICES = [
@@ -54,6 +54,19 @@ const APP_FILES = [
   'img/girl/hero-hurt.png',
   'img/girl/hero-victory.png',
   'img/mom/mom-explain.jpg',
+  'img/vfx-ideas/1-hit-spark.jpg',
+  'img/vfx-ideas/2-yes-banner.jpg',
+  'img/vfx-ideas/3-power-aura.jpg',
+  'img/vfx-ideas/4-comic-pow.jpg',
+  'img/vfx-ideas/girl/1-hit-spark.jpg',
+  'img/vfx-ideas/girl/2-yes-banner.jpg',
+  'img/vfx-ideas/girl/3-power-aura.jpg',
+  'img/vfx-ideas/girl/4-comic-pow.jpg',
+  ...['trophy', 'fireworks', 'podium', 'mega', 'legend'].flatMap((id) => [
+    `img/vfx-ideas/finale/boy-${id}.jpg`,
+    `img/vfx-ideas/finale/girl-${id}.jpg`,
+  ]),
+  'vfx-compare.html',
   'img/avatar-hello.jpg',
   'img/avatar-think.jpg',
   'img/avatar-cheer.jpg',

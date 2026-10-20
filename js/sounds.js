@@ -116,5 +116,34 @@ window.Sounds = (function () {
         notes.forEach((f, i) => tone(f, times[i], i === notes.length - 1 ? 0.7 : 0.2, 'square', 0.1));
       });
     },
+    /** Big crowd-cheer style win stinger (boy = brassier, girl = brighter/sparkly). */
+    cheer(gender) {
+      play(() => {
+        const girl = gender === 'girl';
+        // Crowd noise swell
+        noise(0, 1.4, girl ? 0.22 : 0.28, girl ? 1800 : 1200, 'bandpass');
+        noise(0.15, 1.2, 0.18, girl ? 2400 : 900, 'highpass');
+        // Rising cheer whoosh
+        slide(girl ? 400 : 280, girl ? 1400 : 900, 0.05, 0.55, 'sawtooth', girl ? 0.08 : 0.1);
+        slide(girl ? 600 : 360, girl ? 1600 : 1100, 0.2, 0.5, 'triangle', 0.07);
+        // Fanfare / sparkle melody
+        const notes = girl
+          ? [659.25, 783.99, 1046.5, 1318.5, 1046.5, 1568, 1318.5]
+          : [392, 523.25, 659.25, 783.99, 1046.5, 783.99, 1046.5];
+        const times = [0.1, 0.22, 0.34, 0.46, 0.62, 0.78, 0.95];
+        notes.forEach((f, i) =>
+          tone(f, times[i], i === notes.length - 1 ? 0.85 : 0.22, girl ? 'sine' : 'square', girl ? 0.12 : 0.11)
+        );
+        // Extra sparkle chimes for girl / brass hits for boy
+        if (girl) {
+          [0.3, 0.55, 0.8, 1.05].forEach((s) => tone(2093, s, 0.1, 'triangle', 0.06));
+        } else {
+          [0.4, 0.7, 1.0].forEach((s) => {
+            noise(s, 0.12, 0.25, 600, 'lowpass');
+            tone(196, s, 0.18, 'square', 0.08);
+          });
+        }
+      });
+    },
   };
 })();

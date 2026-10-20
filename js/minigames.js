@@ -36,6 +36,17 @@ window.MiniGames = (function () {
     return s;
   }
 
+  /** Visible label without HTML tags (doors/cards must show plain text). */
+  function plainLabel(api, q, v) {
+    const raw = api.label ? api.label(q, v) : v;
+    if (raw == null) return String(v);
+    const s = String(raw);
+    if (!s.includes('<')) return s;
+    const tmp = document.createElement('div');
+    tmp.innerHTML = s;
+    return (tmp.textContent || '').trim() || String(v);
+  }
+
   function chip() {
     return '';
   }
@@ -107,26 +118,41 @@ window.MiniGames = (function () {
   }
 
   function door(host, q, api) {
-    const opts = shuffle(q.choices.slice(0, 3));
-    while (opts.length < 3) opts.push(opts[0]);
-    if (!opts.includes(q.answer)) opts[0] = q.answer;
-    const doors = shuffle(opts.slice(0, 3));
-    host.innerHTML = `${chip(api, 'door')}<div class="mg-doors">${doors
-      .map(
-        (v, i) =>
-          `<button type="button" class="mg-door" data-v="${v}"><span>🚪</span><b>${api.tx('باب', 'Door')} ${api.N(i + 1)}</b></button>`
-      )
-      .join('')}</div>`;
-    host.querySelectorAll('.mg-door').forEach((btn) =>
+    // Build doors with DOM + plain text so times always show (HTML labels were
+    // either invisible or flashed as raw markup on click).
+    const pool = shuffle((q.choices || []).slice());
+    if (!pool.includes(q.answer)) pool.unshift(q.answer);
+    const rest = pool.filter((v) => v !== q.answer);
+    const doors = shuffle([q.answer, ...rest.slice(0, 2)]);
+    while (doors.length < 3) doors.push(q.answer);
+
+    host.innerHTML = `${chip(api, 'door')}<div class="mg-doors"></div>`;
+    const row = host.querySelector('.mg-doors');
+    doors.forEach((v, i) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'mg-door';
+      btn.dataset.v = String(v);
+
+      const icon = document.createElement('span');
+      icon.textContent = '🚪';
+      const cap = document.createElement('small');
+      cap.textContent = `${api.tx('باب', 'Door')} ${api.N(i + 1)}`;
+      const val = document.createElement('b');
+      val.dir = 'ltr';
+      val.textContent = plainLabel(api, q, v);
+
+      btn.append(icon, cap, val);
       btn.addEventListener('click', () => {
         if (api.locked()) return;
         Sounds.tap();
-        const v = parseVal(btn.dataset.v);
-        btn.classList.add(v === q.answer ? 'open' : 'trap');
-        btn.querySelector('b').textContent = api.label(q, v);
-        api.answer(v, btn);
-      })
-    );
+        const picked = parseVal(btn.dataset.v);
+        const ok = picked === q.answer || String(picked) === String(q.answer);
+        btn.classList.add(ok ? 'open' : 'trap');
+        api.answer(ok ? q.answer : picked, btn);
+      });
+      row.appendChild(btn);
+    });
   }
 
   function memory(host, q, api) {
@@ -149,7 +175,7 @@ window.MiniGames = (function () {
         if (api.locked() || busy || btn.classList.contains('matched') || !btn.classList.contains('back')) return;
         Sounds.tap();
         btn.classList.remove('back');
-        btn.querySelector('.face').textContent = api.label(q, parseVal(btn.dataset.v));
+        btn.querySelector('.face').textContent = plainLabel(api, q, parseVal(btn.dataset.v));
         open.push(btn);
         if (open.length < 2) return;
         busy = true;

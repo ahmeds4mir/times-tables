@@ -597,10 +597,12 @@ window.Adventure = function (cfg) {
       progress[st.level] = stars;
       localStorage.setItem(SAVE_KEY, JSON.stringify(progress));
     }
-    if (stars >= 1) Sounds.fanfare();
-    if (stars >= 2) Confetti.celebrate();
-    if (window.Vfx && stars >= 1) {
-      Vfx.burst({ style: 'banner', lang: ctx.lang(), x: innerWidth / 2, y: innerHeight * 0.4 });
+    if (stars >= 1) {
+      if (window.Vfx && Vfx.finale) Vfx.finale({ lang: ctx.lang() });
+      else {
+        Sounds.fanfare();
+        if (stars >= 2) Confetti.celebrate();
+      }
     }
     show('end');
   }

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>VFX Compare — Concept vs App</title>
+  <title>VFX Compare — Concept vs App (with scenes)</title>
   <link href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/vfx.css">
   <style>
@@ -65,24 +65,10 @@
     .stage {
       width: 100%;
       height: 100%;
-      background:
-        radial-gradient(circle at 20% 20%, #FFE8A3 0, transparent 40%),
-        radial-gradient(circle at 80% 30%, #FFC1E3 0, transparent 40%),
-        radial-gradient(circle at 50% 80%, #C7F9E5 0, transparent 45%),
-        #FFF8F0;
-      display: grid;
-      place-items: center;
       position: relative;
       overflow: hidden;
+      background: #222;
     }
-    .stage .fake-ui {
-      text-align: center;
-      z-index: 1;
-      opacity: .5;
-      pointer-events: none;
-    }
-    .stage .fake-ui b { font-size: 1.25rem; }
-    /* Local VFX layer clipped inside the phone frame */
     .stage .local-vfx {
       position: absolute;
       inset: 0;
@@ -90,22 +76,32 @@
       pointer-events: none;
       opacity: 0;
       visibility: hidden;
+      transition: opacity .35s ease;
     }
-    .stage .local-vfx.on {
-      opacity: 1;
-      visibility: visible;
+    .stage .local-vfx.on { opacity: 1; visibility: visible; }
+    .stage .local-vfx.leaving { opacity: 0; }
+    .stage .local-vfx {
+      --vx: 50%;
+      --vy: 45%;
     }
-    .stage .local-vfx .vfx-banner { top: 42%; }
-    .stage .local-vfx .vfx-spark,
-    .stage .local-vfx .vfx-aura,
-    .stage .local-vfx .vfx-pow {
-      left: 50%;
-      top: 45%;
+    .stage .local-vfx {
+      background: #1a1030;
     }
-    .stage .local-vfx .vfx-bam {
-      left: 72%;
-      top: 58%;
+    .stage .local-vfx .vfx-scene {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      object-position: center;
     }
+    .stage .local-vfx .vfx-scene-shade {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+    }
+    .stage .local-vfx .vfx-fx { position: absolute; inset: 0; z-index: 5; }
     .play {
       margin-top: 8px;
       width: 100%;
@@ -139,9 +135,9 @@
   </style>
 </head>
 <body>
-  <h1>VFX: Concept images vs App</h1>
-  <p class="sub">Left = the 4 concept images. Right = the real app VFX (same CSS/JS), played inside the frame so you can compare side by side.</p>
-  <button class="all" id="playAll" type="button">▶ Play all 4 app effects (one after another)</button>
+  <h1>VFX: Concept vs App (full illustrated scenes)</h1>
+  <p class="sub">Left = concept still. Right = app effect: <b>same illustrated scene fades in</b> + overlay FX, then fades out together (~2.4s).</p>
+  <button class="all" id="playAll" type="button">▶ Play all 4 with scene backgrounds</button>
 
   <section class="row">
     <div class="col">
@@ -150,13 +146,8 @@
     </div>
     <div class="col">
       <h2>1. Hit Spark <span class="tag app">In app</span></h2>
-      <div class="frame">
-        <div class="stage" data-style="spark">
-          <div class="fake-ui"><div>2 × 4 = ?</div><b>Correct!</b></div>
-          <div class="local-vfx"></div>
-        </div>
-      </div>
-      <button class="play" type="button" data-style="spark">▶ Replay Hit Spark</button>
+      <div class="frame"><div class="stage" data-style="spark"><div class="local-vfx"></div></div></div>
+      <button class="play" type="button" data-style="spark">▶ Replay with scene</button>
     </div>
   </section>
 
@@ -167,13 +158,8 @@
     </div>
     <div class="col">
       <h2>2. YES! Banner <span class="tag app">In app</span></h2>
-      <div class="frame">
-        <div class="stage" data-style="banner">
-          <div class="fake-ui"><div>3 × 5 = ?</div><b>Correct!</b></div>
-          <div class="local-vfx"></div>
-        </div>
-      </div>
-      <button class="play" type="button" data-style="banner">▶ Replay YES Banner</button>
+      <div class="frame"><div class="stage" data-style="banner"><div class="local-vfx"></div></div></div>
+      <button class="play" type="button" data-style="banner">▶ Replay with scene</button>
     </div>
   </section>
 
@@ -184,13 +170,8 @@
     </div>
     <div class="col">
       <h2>3. Power Aura <span class="tag app">In app</span></h2>
-      <div class="frame">
-        <div class="stage" data-style="aura">
-          <div class="fake-ui"><div>7 × 6 = ?</div><b>Correct!</b></div>
-          <div class="local-vfx"></div>
-        </div>
-      </div>
-      <button class="play" type="button" data-style="aura">▶ Replay Power Aura</button>
+      <div class="frame"><div class="stage" data-style="aura"><div class="local-vfx"></div></div></div>
+      <button class="play" type="button" data-style="aura">▶ Replay with scene</button>
     </div>
   </section>
 
@@ -201,65 +182,44 @@
     </div>
     <div class="col">
       <h2>4. Comic POW <span class="tag app">In app</span></h2>
-      <div class="frame">
-        <div class="stage" data-style="pow">
-          <div class="fake-ui"><div>7 + 6 = ?</div><b>Correct!</b></div>
-          <div class="local-vfx"></div>
-        </div>
-      </div>
-      <button class="play" type="button" data-style="pow">▶ Replay Comic POW</button>
+      <div class="frame"><div class="stage" data-style="pow"><div class="local-vfx"></div></div></div>
+      <button class="play" type="button" data-style="pow">▶ Replay with scene</button>
     </div>
   </section>
 
+  <script src="js/vfx.js"></script>
   <script>
-    const HTML = {
-      spark: `
-        <div class="vfx-flash"></div>
-        <div class="vfx-tint hot"></div>
-        <div class="vfx-lines"></div>
-        <div class="vfx-spark">
-          <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
-          <span class="vfx-starburst"></span>
-          <b class="vfx-plus">+1</b>
-        </div>`,
-      banner: `
-        <div class="vfx-flash soft"></div>
-        <div class="vfx-tint hot"></div>
-        <div class="vfx-speed"></div>
-        <div class="vfx-banner"><span>YES!</span></div>`,
-      aura: `
-        <div class="vfx-flash soft"></div>
-        <div class="vfx-tint cool"></div>
-        <div class="vfx-aura">
-          <span class="ring"></span><span class="ring d2"></span><span class="ring d3"></span>
-          <span class="bolt"></span>
-        </div>
-        <div class="vfx-banner small"><span>POWER!</span></div>`,
-      pow: `
-        <div class="vfx-flash soft"></div>
-        <div class="vfx-tint hot"></div>
-        <div class="vfx-pow">
-          <span class="burst"></span>
-          <b>POW</b>
-        </div>
-        <div class="vfx-bam">BAM!</div>
-        <div class="vfx-stars">⭐✨🌟💫⭐</div>`,
+    const FX = {
+      spark: `<div class="vfx-flash"></div><div class="vfx-lines"></div><div class="vfx-spark"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><span class="vfx-starburst"></span><b class="vfx-plus">+1</b></div>`,
+      banner: `<div class="vfx-flash soft"></div><div class="vfx-speed"></div><div class="vfx-banner"><span>YES!</span></div>`,
+      aura: `<div class="vfx-flash soft"></div><div class="vfx-aura"><span class="ring"></span><span class="ring d2"></span><span class="ring d3"></span><span class="bolt"></span></div><div class="vfx-banner small"><span>POWER!</span></div>`,
+      pow: `<div class="vfx-flash soft"></div><div class="vfx-pow"><span class="burst"></span><b>POW</b></div><div class="vfx-bam">BAM!</div><div class="vfx-stars">⭐✨🌟💫⭐</div>`,
     };
 
-    function play(style, holdMs = 2200) {
+    function play(style, holdMs = 2400) {
       const stage = document.querySelector(`.stage[data-style="${style}"]`);
       const layer = stage.querySelector('.local-vfx');
+      const scene = Vfx.SCENES[style];
+      clearTimeout(layer._t);
+      clearTimeout(layer._t2);
       layer.className = 'local-vfx';
       layer.innerHTML = '';
       void layer.offsetWidth;
       layer.style.setProperty('--vx', '50%');
       layer.style.setProperty('--vy', '45%');
-      layer.innerHTML = HTML[style];
+      layer.innerHTML = `
+        <div class="vfx-scene-wrap">
+          <img class="vfx-scene" src="${scene}" alt="">
+        </div>
+        <div class="vfx-scene-shade"></div>
+        <div class="vfx-fx">${FX[style]}</div>`;
       layer.classList.add('on', 'mode-' + style);
-      clearTimeout(layer._t);
       layer._t = setTimeout(() => {
-        layer.classList.remove('on');
-        layer.innerHTML = '';
+        layer.classList.add('leaving');
+        layer._t2 = setTimeout(() => {
+          layer.classList.remove('on', 'leaving');
+          layer.innerHTML = '';
+        }, 380);
       }, holdMs);
     }
 
@@ -270,17 +230,16 @@
     document.getElementById('playAll').addEventListener('click', async () => {
       for (const s of ['spark', 'banner', 'aura', 'pow']) {
         document.querySelector(`.stage[data-style="${s}"]`).scrollIntoView({ block: 'center', behavior: 'smooth' });
-        play(s, 2300);
-        await new Promise((r) => setTimeout(r, 2400));
+        play(s, 2400);
+        await new Promise((r) => setTimeout(r, 2900));
       }
     });
 
-    // Auto-start: show spark then banner so the page isn't empty
-    setTimeout(() => play('spark', 2500), 400);
+    setTimeout(() => play('spark', 2600), 500);
     setTimeout(() => {
       document.querySelector('.stage[data-style="banner"]').closest('.row').scrollIntoView({ block: 'center' });
-      play('banner', 2500);
-    }, 3000);
+      play('banner', 2600);
+    }, 3200);
   </script>
 </body>
 </html>

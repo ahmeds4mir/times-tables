@@ -707,7 +707,9 @@ main {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *:not(#vfxHost):not(#vfxHost *),
+  *:not(#vfxHost):not(#vfxHost *)::before,
+  *:not(#vfxHost):not(#vfxHost *)::after {
     animation-duration: .01ms !important;
     animation-iteration-count: 1 !important;
     transition: none !important;

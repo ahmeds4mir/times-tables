@@ -629,6 +629,11 @@ window.Chapter1 = (function () {
         progress[st.lesson] = st.heroHp;
         localStorage.setItem(SAVE_KEY, JSON.stringify(progress));
       }
+      if (window.Vfx && Vfx.finale) Vfx.finale({ lang: ctx.lang() });
+      else {
+        Sounds.fanfare();
+        Confetti.celebrate();
+      }
     }
     show('end');
   }

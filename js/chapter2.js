@@ -918,7 +918,13 @@ window.Chapter2 = (function () {
 
     ctx.root.querySelectorAll('.choice, .step-btn, #checkBtn, .mg-door, .mg-balloon, .mg-card, .mg-sort-card, .mg-bucket, .mg-box').forEach((b) => (b.disabled = true));
     ctx.root.querySelectorAll('.choice, .mg-door, .mg-balloon, .mg-sort-card').forEach((b) => {
-      const v = b.dataset.v != null ? Number(b.dataset.v) : m.choices[Number(b.dataset.i)];
+      let v;
+      if (b.dataset.v != null) {
+        const n = Number(b.dataset.v);
+        v = Number.isFinite(n) && String(n) === String(b.dataset.v).trim() ? n : b.dataset.v;
+      } else {
+        v = m.choices[Number(b.dataset.i)];
+      }
       if (v === m.answer) b.classList.add('right');
       else if (b !== btn) b.classList.add('faded');
     });
@@ -1001,8 +1007,13 @@ window.Chapter2 = (function () {
       progress[st.level] = stars;
       localStorage.setItem(SAVE_KEY, JSON.stringify(progress));
     }
-    if (stars >= 1) Sounds.fanfare();
-    if (stars >= 2) Confetti.celebrate();
+    if (stars >= 1) {
+      if (window.Vfx && Vfx.finale) Vfx.finale({ lang: ctx.lang() });
+      else {
+        Sounds.fanfare();
+        if (stars >= 2) Confetti.celebrate();
+      }
+    }
     show('end');
   }
 
